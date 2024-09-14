@@ -21,16 +21,23 @@ def upload_file():
         return redirect(request.url)
 
     if file:
-        enrolled_path = os.path.join('uploaded_files', file.filename)
+        # enrolled_path = os.path.join('../uploaded_files', file.filename)
+        # file.save(enrolled_path)
+        upload_folder = os.path.join(app.root_path, '../uploaded_files')
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder)
+
+        enrolled_path = os.path.join(upload_folder, file.filename)
         file.save(enrolled_path)
+        return 'File successfully uploaded'
 
         # Reference voice path (pre-stored)
-        reference_path = 'uploaded_files/reference_voice.wav'
+        reference_path = '../uploaded_files/reference_voice.wav'
 
         # Compare the enrolled voice to the reference voice
         score, prediction = model.verify_files(enrolled_path, reference_path)
         result = "Same speaker" if score > 0.75 else "Different speaker"
-
+        print(f'Result: {result} (Score: {score})')
         return f'Result: {result} (Score: {score})'
 
 if __name__ == '__main__':
