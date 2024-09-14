@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from speechbrain.inference import SpeakerRecognition
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates')
 
 # Initialize SpeechBrain model
 model = SpeakerRecognition.from_hparams(source="speechbrain/spkrec-ecapa-voxceleb", savedir="pretrained_model")
