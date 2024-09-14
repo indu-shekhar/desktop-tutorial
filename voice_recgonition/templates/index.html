@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Enrollment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+</head>
+<body>
+    <h1>Enroll Your Voice</h1>
+    <button id="record-btn">Start Recording</button>
+    <button id="stop-btn" disabled>Stop Recording</button>
+    <audio id="player" controls></audio>
+    <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" id="audio-file" name="audio-file" hidden>
+        <input type="submit" value="Submit">
+    </form>
+    <script src="{{ url_for('static', filename='scripts/app.js') }}"></script>
+</body>
+</html>
