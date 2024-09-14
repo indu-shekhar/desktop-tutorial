@@ -5,10 +5,10 @@ import os
 # Initialize SpeechBrain model
 model = SpeakerRecognition.from_hparams(source="speechbrain/spkrec-ecapa-voxceleb", savedir="pretrained_model")
 
-reference_path = '../uploaded_files/reference_voice.wav'
+reference_path = 'reference_voice.wav'
 
 # Compare the enrolled voice to the reference voice
-enrolled_path = "../uploaded_files/enrolled_audio.wav"
+enrolled_path = "enrolled_audio.wav"
 score, prediction = model.verify_files(enrolled_path, reference_path)
 result = "Same speaker" if score > 0.75 else "Different speaker"
 print(f'Result: {result} (Score: {score})')
