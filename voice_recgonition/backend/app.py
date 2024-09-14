@@ -35,7 +35,8 @@ def upload_file():
         reference_path = '../uploaded_files/reference_voice.wav'
 
         # Compare the enrolled voice to the reference voice
-        enrolled_path = "../uploaded_files/enrolled_audio.wav"
+        # ../uploaded_files/enrolled_audio.wav
+        enrolled_path = "enroll.wav"
         score, prediction = model.verify_files(enrolled_path, reference_path)
         result = "Same speaker" if score > 0.75 else "Different speaker"
         print(f'Result: {result} (Score: {score})')
