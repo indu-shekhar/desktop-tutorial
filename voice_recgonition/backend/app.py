@@ -29,7 +29,7 @@ def upload_file():
 
         enrolled_path = os.path.join(upload_folder, file.filename)
         file.save(enrolled_path)
-        return 'File successfully uploaded'
+        # return 'File successfully uploaded'
 
         # Reference voice path (pre-stored)
         reference_path = '../uploaded_files/reference_voice.wav'
