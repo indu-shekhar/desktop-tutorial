@@ -8,7 +8,7 @@ model = SpeakerRecognition.from_hparams(source="speechbrain/spkrec-ecapa-voxcele
 reference_path = 'reference_voice.wav'
 
 # Compare the enrolled voice to the reference voice
-enrolled_path = "enrolled_audio.wav"
+enrolled_path = ".wav"
 score, prediction = model.verify_files(enrolled_path, reference_path)
 result = "Same speaker" if score > 0.75 else "Different speaker"
 print(f'Result: {result} (Score: {score})')
