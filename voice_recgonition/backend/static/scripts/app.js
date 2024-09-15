@@ -70,7 +70,7 @@ recordBtn.addEventListener('click', async () => {
         audioPlayer.src = audioURL;
 
         // Convert blob to a file and store it in the input field for submission
-        const file = new File([blob], 'enrolled1_audio.wav', { type: blob.type });
+        const file = new File([blob], 'enrolled_audio.wav', { type: blob.type });
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
         audioInput.files = dataTransfer.files;
