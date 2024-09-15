@@ -1,5 +1,5 @@
 from pydub import AudioSegment
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from speechbrain.inference import SpeakerRecognition
 import os
 
@@ -14,12 +14,18 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    # if 'audio-file' not in request.files:
+    #     return redirect(request.url)
+
+    # file = request.files['audio-file']
+    # if file.filename == '':
+    #     return redirect(request.url)
     if 'audio-file' not in request.files:
-        return redirect(request.url)
+        return jsonify({"error": "No file uploaded"}), 400
 
     file = request.files['audio-file']
     if file.filename == '':
-        return redirect(request.url)
+        return jsonify({"error": "No selected file"}), 400
 
     if file:
         # enrolled_path = os.path.join('../uploaded_files', file.filename)
@@ -43,9 +49,9 @@ def upload_file():
             # prediction uing the model and the enrolled and reference voice
             score, prediction = model.verify_files(enrolled_path, reference_path)
             result = "Same speaker" if score > 0.75 else "Different speaker"
-            print(f'Result: {result} (Score: {score})')
-            return f'Result: {result} (Score: {score})'
-            
+            # print(f'Result: {result} (Score: {score})')
+            # return f'Result: {result} (Score: {score})'
+            return jsonify({"result": result})
         except Exception as e:
             os.remove(enrolled_path)
             return f'Error: {e}'
