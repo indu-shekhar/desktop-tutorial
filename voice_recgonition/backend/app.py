@@ -1,3 +1,4 @@
+from pydub import AudioSegment
 from flask import Flask, render_template, request, redirect, url_for
 from speechbrain.inference import SpeakerRecognition
 import os
@@ -33,14 +34,21 @@ def upload_file():
 
         # Reference voice path (pre-stored)
         reference_path = '../uploaded_files/reference_voice.wav'
-
+        enrolled_path = "../uploaded_files/enrolled_audio.wav"
         # Compare the enrolled voice to the reference voice
         # ../uploaded_files/enrolled_audio.wav
-        enrolled_path = "../uploaded_files/enrolled_audio.wav"
-        score, prediction = model.verify_files(enrolled_path, reference_path)
-        result = "Same speaker" if score > 0.75 else "Different speaker"
-        print(f'Result: {result} (Score: {score})')
-        return f'Result: {result} (Score: {score})'
+        try:
+            sound=AudioSegment.from_file(enrolled_path)
+            sound.export(enrolled_path, format="wav")
+            # prediction uing the model and the enrolled and reference voice
+            score, prediction = model.verify_files(enrolled_path, reference_path)
+            result = "Same speaker" if score > 0.75 else "Different speaker"
+            print(f'Result: {result} (Score: {score})')
+            return f'Result: {result} (Score: {score})'
+            
+        except Exception as e:
+            os.remove(enrolled_path)
+            return f'Error: {e}'
 
 if __name__ == '__main__':
     app.run(debug=True)
