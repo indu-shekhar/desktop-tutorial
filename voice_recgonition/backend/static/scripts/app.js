@@ -5,7 +5,7 @@ const recordBtn = document.getElementById('record-btn');
 const stopBtn = document.getElementById('stop-btn');
 const audioPlayer = document.getElementById('player');
 const audioInput = document.getElementById('audio-file');
-audioPlayer.disabled = true;
+audioPlayer.style.display = 'none';
 
 recordBtn.addEventListener('click', async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -37,7 +37,7 @@ stopBtn.addEventListener('click', () => {
     mediaRecorder.stop();
     recordBtn.disabled = false;
     stopBtn.disabled = true;
-    audioPlayer.disabled = false;
+    audioPlayer.style.display = 'block';
 });
 
 
