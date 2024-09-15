@@ -7,14 +7,26 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
 </head>
 <body>
-    <h1>Enroll Your Voice</h1>
+    <!-- <h1>Enroll Your Voice</h1>
     <button id="record-btn">Start Recording</button>
     <button id="stop-btn" disabled>Stop Recording</button>
     <audio id="player" controls></audio>
     <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
         <input type="file" id="audio-file" name="audio-file" hidden>
         <input type="submit" value="Submit">
-    </form>
+    </form> -->
+    <body>
+        <div id="content-box">
+            <h1>Enroll Your Voice</h1>
+            <button id="record-btn">Start Recording</button>
+            <button id="stop-btn" disabled>Stop Recording</button>
+            <audio id="player" controls></audio>
+            <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
+                <input type="file" id="audio-file" name="audio-file" hidden>
+                <input type="submit" value="Submit">
+            </form>
+        </div>
+    </body>    
     <!-- Copilot: Add JavaScript to handle recording and uploading audio files -->
     <script src="{{ url_for('static', filename='scripts/app.js') }}"></script>\
     <!-- Include wavefile library -->
