@@ -33,6 +33,33 @@ recordBtn.addEventListener('click', async () => {
     stopBtn.disabled = false;
 });
 
+document.getElementById('upload-form').addEventListener('submit', function(event) {
+    event.preventDefault();  // Prevent the form from submitting the traditional way
+
+    var formData = new FormData();
+    var fileInput = document.getElementById('audio-file');
+    
+    formData.append('audio-file', fileInput.files[0]);
+
+    // Send the form data via AJAX
+    fetch('/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            document.getElementById('result').innerText = data.error;
+        } else {
+            document.getElementById('result').innerText = 'Prediction: ' + data.result;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('result').innerText = 'An error occurred while processing the file';
+    });
+});
+
 stopBtn.addEventListener('click', () => {
     mediaRecorder.stop();
     recordBtn.disabled = false;
