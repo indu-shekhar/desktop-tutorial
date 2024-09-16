@@ -1,25 +1,5 @@
-/* body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    margin-top: 50px;
-}
-h1 {
-    color: #333;
-}
-button {
-    margin: 10px;
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-} */
  /* Style for the body with a gradient background */
-body {
+ body {
     font-family: 'Arial', sans-serif;
     height: 100vh;
     margin: 0;
