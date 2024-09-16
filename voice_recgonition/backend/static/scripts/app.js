@@ -1,145 +1,87 @@
+// Initialize variables to store audio chunks and the media recorder
 let chunks = [];
 let mediaRecorder;
 
-const recordBtn = document.getElementById('record-btn');
-const stopBtn = document.getElementById('stop-btn');
-const audioPlayer = document.getElementById('player');
-const audioInput = document.getElementById('audio-file');
-audioPlayer.style.display = 'none';
+// Get references to the HTML elements
+const recordBtn = document.getElementById("record-btn");
+const stopBtn = document.getElementById("stop-btn");
+const audioPlayer = document.getElementById("player");
+const audioInput = document.getElementById("audio-file");
 
-recordBtn.addEventListener('click', async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
+// Hide the audio player initially
+audioPlayer.style.display = "none";
 
-    mediaRecorder.ondataavailable = (e) => {
-        chunks.push(e.data);
-    };
+// Add event listener to the record button
+recordBtn.addEventListener("click", async () => {
+  // Request access to the user's microphone
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  // Initialize the media recorder with the audio stream
+  mediaRecorder = new MediaRecorder(stream);
 
-    mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/wav' });
-        chunks = [];
-        const audioURL = URL.createObjectURL(blob);
-        audioPlayer.src = audioURL;
+  // Event handler for when audio data is available
+  mediaRecorder.ondataavailable = (e) => {
+    chunks.push(e.data);
+  };
 
-        // Convert blob to a file and store it in the input field for submission
-        const file = new File([blob], 'enrolled_audio.wav', { type: blob.type });
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        audioInput.files = dataTransfer.files;
-    };
+  // Event handler for when recording stops
+  mediaRecorder.onstop = () => {
+    // Create a blob from the recorded audio chunks
+    const blob = new Blob(chunks, { type: "audio/wav" });
+    chunks = [];
+    // Create a URL for the audio blob and set it as the source for the audio player
+    const audioURL = URL.createObjectURL(blob);
+    audioPlayer.src = audioURL;
 
-    mediaRecorder.start();
-    recordBtn.disabled = true;
-    stopBtn.disabled = false;
+    // Create a file from the audio blob and set it as the input file for the form
+    const file = new File([blob], "enrolled_audio.wav", { type: blob.type });
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    audioInput.files = dataTransfer.files;
+  };
+
+  // Start recording
+  mediaRecorder.start();
+  // Disable the record button and enable the stop button
+  recordBtn.disabled = true;
+  stopBtn.disabled = false;
 });
 
-document.getElementById('upload-form').addEventListener('submit', function(event) {
-    event.preventDefault();  // Prevent the form from submitting the traditional way
+// Add event listener to the form submission
+document.getElementById("upload-form").addEventListener("submit", function (event) {
+  event.preventDefault();
 
-    var formData = new FormData();
-    var fileInput = document.getElementById('audio-file');
-    
-    formData.append('audio-file', fileInput.files[0]);
+  // Create a FormData object and append the audio file
+  var formData = new FormData();
+  var fileInput = document.getElementById("audio-file");
+  formData.append("audio-file", fileInput.files[0]);
 
-    // Send the form data via AJAX
-    fetch('/upload', {
-        method: 'POST',
-        body: formData
+  // Send the form data to the server using fetch
+  fetch("/upload", {
+    method: "POST",
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      // Display the result or error message
+      if (data.error) {
+        document.getElementById("result").innerText = data.error;
+      } else {
+        document.getElementById("result").innerText = "Prediction: " + data.result;
+      }
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            document.getElementById('result').innerText = data.error;
-        } else {
-            document.getElementById('result').innerText = 'Prediction: ' + data.result;
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        document.getElementById('result').innerText = 'An error occurred while processing the file';
+    .catch((error) => {
+      console.error("Error:", error);
+      document.getElementById("result").innerText = "An error occurred while processing the file";
     });
 });
 
-stopBtn.addEventListener('click', () => {
-    mediaRecorder.stop();
-    recordBtn.disabled = false;
-    stopBtn.disabled = true;
-    audioPlayer.style.display = 'block';
+// Add event listener to the stop button
+stopBtn.addEventListener("click", () => {
+  // Stop the recording
+  mediaRecorder.stop();
+  // Enable the record button and disable the stop button
+  recordBtn.disabled = false;
+  stopBtn.disabled = true;
+  // Show the audio player
+  audioPlayer.style.display = "block";
 });
-
-
-
-
-// // const dataTransfer = new DataTransfer();
-
-// // try {
-// //     dataTransfer.items.add(file);
-// //     audioInput.files = dataTransfer.files;
-// // } catch (error) {
-// //     console.error('Error adding file to DataTransfer:', error);
-// // }
-
-// // try {
-// //     mediaRecorder.start();
-// //     recordBtn.disabled = true;
-// //     stopBtn.disabled = false;
-// // } catch (error) {
-// //     console.error('Error starting media recorder:', error);
-// // }
-
-// // stopBtn.addEventListener('click', () => {
-// //     try {
-// //         mediaRecorder.stop();
-// //         recordBtn.disabled = false;
-// //         stopBtn.disabled = true;
-// //     } catch (error) {
-// //         console.error('Error stopping media recorder:', error);
-// //     }
-// // });
-// let chunks = [];
-// let mediaRecorder;
-
-// const recordBtn = document.getElementById('record-btn');
-// const stopBtn = document.getElementById('stop-btn');
-// const audioPlayer = document.getElementById('player');
-// const audioInput = document.getElementById('audio-file');
-
-// recordBtn.addEventListener('click', async () => {
-//     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-//     mediaRecorder = new MediaRecorder(stream);
-
-//     mediaRecorder.ondataavailable = (e) => {
-//         chunks.push(e.data);
-//     };
-
-//     mediaRecorder.onstop = async () => {
-//         const blob = new Blob(chunks, { type: 'audio/webm' });
-//         chunks = [];
-//         const arrayBuffer = await blob.arrayBuffer();
-//         const uint8Array = new Uint8Array(arrayBuffer);
-
-//         // Use wavefile library to create a valid WAV file
-//         const wav = new wavefile.WaveFile();
-//         wav.fromScratch(1, 48000, '16', uint8Array);
-
-//         const wavBlob = new Blob([wav.toBuffer()], { type: 'audio/wav' });
-//         const audioURL = URL.createObjectURL(wavBlob);
-//         audioPlayer.src = audioURL;
-
-//         // Convert blob to a file and store it in the input field for submission
-//         const file = new File([wavBlob], 'enrolled_audio.wav', { type: 'audio/wav' });
-//         const dataTransfer = new DataTransfer();
-//         dataTransfer.items.add(file);
-//         audioInput.files = dataTransfer.files;
-//     };
-
-//     mediaRecorder.start();
-//     recordBtn.disabled = true;
-//     stopBtn.disabled = false;
-// });
-
-// stopBtn.addEventListener('click', () => {
-//     mediaRecorder.stop();
-//     recordBtn.disabled = false;
-//     stopBtn.disabled = true;
-// });
