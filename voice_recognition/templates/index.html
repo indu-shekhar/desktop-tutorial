@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Enrollment</title>
+    <title>Voice authentication</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
 </head>
 <body>
@@ -15,7 +15,9 @@
         <input type="file" id="audio-file" name="audio-file" hidden>
         <input type="submit" value="Submit">
     </form> -->
-    <body>
+        <div id="header">
+            <h1>Voice Authentication</h1>
+        </div>
         <div id="content-box">
             <h1>Enroll Your Voice</h1>
             <button id="record-btn">Start Recording</button>
@@ -25,9 +27,11 @@
                 <input type="file" id="audio-file" name="audio-file" hidden>
                 <input type="submit" value="Submit">
             </form>
+            <div class="registration">
+                <p>Don't have an account? <a href="/register">Register</a></p>
+            </div>
             <P id="result"></P>
         </div>
-    </body>    
     <!-- Copilot: Add JavaScript to handle recording and uploading audio files -->
     <script src="{{ url_for('static', filename='scripts/app.js') }}"></script>
     <!-- Include wavefile library -->

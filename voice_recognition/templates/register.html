@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Authentication - Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+</head>
+<body>
+    <div id="header">
+        <h1>Voice Authentication - Register</h1>
+    </div>
+    <div id="content-box">
+        <h1>Register Your Voice</h1>
+        <form id="registration-form" action="/register" method="POST" enctype="multipart/form-data">
+            <label for="email">Email ID:</label>
+            <input type="email" id="email" name="email" required>
+            <br>
+            <label for="user-id">User ID:</label>
+            <input type="text" id="user-id" name="user-id" required>
+            <br>
+            <button type="button" id="record-btn">Start Recording</button>
+            <button type="button" id="stop-btn" disabled>Stop Recording</button>
+            <audio id="player" controls></audio>
+            <input type="file" id="audio-file" name="audio-file" hidden>
+            <br>
+            <input type="submit" value="Register">
+        </form>
+        <div class="login">
+            <p>Already have an account? <a href="/">Login</a></p>
+        </div>
+        <p id="result"></p>
+    </div>
+    <!-- Add JavaScript to handle recording and uploading audio files -->
+    <script src="{{ url_for('static', filename='scripts/app.js') }}"></script>
+    <!-- Include wavefile library -->
+    <script src="https://cdn.jsdelivr.net/npm/wavefile@12.0.0/dist/wavefile.min.js"></script>
+</body>
+</html>
