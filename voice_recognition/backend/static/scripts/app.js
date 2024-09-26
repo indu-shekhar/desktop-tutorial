@@ -55,7 +55,7 @@ document
     // Create a FormData object and append the audio file
     var formData = new FormData();
     var fileInput = document.getElementById("audio-file");
-    var email=document.getElementById("email").value;
+    var email = document.getElementById("email").value;
     formData.append("email", email);
     formData.append("audio-file", fileInput.files[0]);
 
@@ -64,20 +64,33 @@ document
       method: "POST",
       body: formData,
     })
-      .then((response) => response.json())
-      .then((data) => {
-        // Display the result or error message
+      .then(async (response) => {
+        const data = await response.json();
+        // Check if there was an error
         if (data.error) {
           document.getElementById("result").innerText = data.error;
         } else if (response.ok) {
           localStorage.setItem("access_token", data.access_token);
-          window.location.href = "/secret.html";
+          window.location.href = "/secret";
         } else {
-          document.getElementById(
-            "result"
-          ).innerText = `An error occurred while processing the file${data.result}`;
+          document.getElementById("result").innerText =
+            "Unknown error occurred";
         }
       })
+      // .then((response) => response.json())
+      // .then((data) => {
+      //   // Display the result or error message
+      //   if (data.error) {
+      //     document.getElementById("result").innerText = data.error;
+      //   } else if (response.ok) {
+      //     localStorage.setItem("access_token", data.access_token);
+      //     window.location.href = "/secret";
+      //   } else {
+      //     document.getElementById(
+      //       "result"
+      //     ).innerText = `somewhat error unknow error what is that who nows`;
+      //   }
+      // })
       .catch((error) => {
         console.error("Error:", error);
         document.getElementById("result").innerText =

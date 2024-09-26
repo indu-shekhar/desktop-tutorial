@@ -24,6 +24,7 @@ model = SpeakerRecognition.from_hparams(
     source="speechbrain/spkrec-ecapa-voxceleb", savedir="pretrained_model"
 )
 
+
 # Setting up the database model with email ID, password, and audio file in blob format
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -36,11 +37,13 @@ class User(db.Model):
         self.user_id = user_id
         self.audio_file = audio_file
 
+
 # Define the route for the home page
 @app.route("/")
 def index():
     # Render the index.html template
     return render_template("index.html")
+
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -76,6 +79,7 @@ def register():
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
             return jsonify({"message": "User registered successfully!"})
+
 
 @app.route("/login", methods=["POST"])
 def upload_file():
@@ -116,15 +120,15 @@ def upload_file():
 
             # Verify the speaker using the pre-trained model
             score, prediction = model.verify_files(enrolled_path, reference_path)
-            if score > 0.75 : 
-                #redirect the client to the secret page route
-                access_token=create_access_token(identity=user.email)
-                return jsonify({"access_token":access_token}),200
-            else: 
-                result= "Different speaker"
+            if score > 0.75:
+                # redirect the client to the secret page route
+                access_token = create_access_token(identity=user.email)
+                return jsonify({"access_token": access_token}), 200
+            else:
+                result = "Different speaker"
 
             # Return the result as a JSON response
-            return jsonify({"result": result})
+            return jsonify({"result": result}), 401
         except Exception as e:
             # Remove the enrolled file if an error occurs
             os.remove(enrolled_path)
@@ -136,11 +140,14 @@ def upload_file():
             if os.path.exists(reference_path):
                 os.remove(reference_path)
 
+
 @app.route("/secret", methods=["GET"])
 @jwt_required()
 def secret():
     current_user = get_jwt_identity()
-    return jsonify({"message": f"Welcome {current_user} to the secret page!"})
+    return jsonify({"message": f"Welcome {current_user} to the secret page!"}), 200
+
+
 # Run the Flask application
 if __name__ == "__main__":
     with app.app_context():
