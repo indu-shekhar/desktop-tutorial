@@ -110,7 +110,11 @@ def upload_file():
 
             # Verify the speaker using the pre-trained model
             score, prediction = model.verify_files(enrolled_path, reference_path)
-            result = "Same speaker" if score > 0.75 else "Different speaker"
+            if score > 0.75 : 
+                #redirect the client to the secret page route
+                access_token=create_access_token(identity=user.email)
+            else: 
+                result= "Different speaker"
 
             # Return the result as a JSON response
             return jsonify({"result": result})
@@ -125,6 +129,11 @@ def upload_file():
             if os.path.exists(reference_path):
                 os.remove(reference_path)
 
+@app.route("/secret", methods=["GET"])
+@jwt_required()
+def secret():
+    current_user = get_jwt_identity()
+    return jsonify({"message": f"Welcome {current_user} to the secret page!"})
 # Run the Flask application
 if __name__ == "__main__":
     with app.app_context():
