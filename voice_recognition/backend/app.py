@@ -56,9 +56,13 @@ def register():
             return jsonify({"error": "No selected file"}), 400
 
         if file:
-            email = request.form["email"]
-            user_id = request.form["user_id"]
+            email = request.form.get("email")
+            user_id = request.form.get("user_id")
             # Convert the uploaded file to WAV format using pydub
+            existing_user = User.query.filter_by(email=email).first()
+            if existing_user:
+                return jsonify({"error": "Email already registered"}), 400
+
             sound = AudioSegment.from_file(file)
             wav_io = io.BytesIO()
             sound.export(wav_io, format="wav")
@@ -66,9 +70,11 @@ def register():
             wav_data = wav_io.read()
 
             new_user = User(email=email, user_id=user_id, audio_file=wav_data)
-            db.session.add(new_user)
-            db.session.commit()
-
+            try:
+                db.session.add(new_user)
+                db.session.commit()
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
             return jsonify({"message": "User registered successfully!"})
 
 @app.route("/login", methods=["POST"])
@@ -137,5 +143,9 @@ def secret():
 # Run the Flask application
 if __name__ == "__main__":
     with app.app_context():
-        db.create_all()
+        try:
+            db.create_all()
+            print("Database created successfully!")
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
     app.run(debug=True)
