@@ -55,6 +55,8 @@ document
     // Create a FormData object and append the audio file
     var formData = new FormData();
     var fileInput = document.getElementById("audio-file");
+    var email=document.getElementById("email").value;
+    formData.append("email", email);
     formData.append("audio-file", fileInput.files[0]);
 
     //Send the form data to the server using fetch

@@ -99,7 +99,7 @@ def upload_file():
         enrolled_path = os.path.join(upload_folder, file.filename)
         file.save(enrolled_path)
 
-        user = User.query.filter_by(email=request.form["email"]).first()
+        user = User.query.filter_by(email=request.form.get("email")).first()
         if not user:
             return jsonify({"error": "User not found"}), 404
 
@@ -119,6 +119,7 @@ def upload_file():
             if score > 0.75 : 
                 #redirect the client to the secret page route
                 access_token=create_access_token(identity=user.email)
+                return jsonify({"access_token":access_token}),200
             else: 
                 result= "Different speaker"
 
