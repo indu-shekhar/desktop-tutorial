@@ -55,24 +55,24 @@ document.getElementById("upload-form").addEventListener("submit", function (even
   var fileInput = document.getElementById("audio-file");
   formData.append("audio-file", fileInput.files[0]);
 
-  // Send the form data to the server using fetch
-  fetch("/upload", {
+  //Send the form data to the server using fetch
+  fetch("/login", {
     method: "POST",
     body: formData,
   })
-    .then((response) => response.json())
-    .then((data) => {
-      // Display the result or error message
-      if (data.error) {
-        document.getElementById("result").innerText = data.error;
-      } else {
-        document.getElementById("result").innerText = "Prediction: " + data.result;
-      }
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-      document.getElementById("result").innerText = "An error occurred while processing the file";
-    });
+    // .then((response) => response.json())
+    // .then((data) => {
+    //   // Display the result or error message
+    //   if (data.error) {
+    //     document.getElementById("result").innerText = data.error;
+    //   } else {
+    //     document.getElementById("result").innerText = "Prediction: " + data.result;
+    //   }
+    // })
+    // .catch((error) => {
+    //   console.error("Error:", error);
+    //   document.getElementById("result").innerText = "An error occurred while processing the file";
+    // });
 });
 
 // Add event listener to the stop button

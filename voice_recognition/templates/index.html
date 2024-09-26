@@ -23,14 +23,17 @@
             <button id="record-btn">Start Recording</button>
             <button id="stop-btn" disabled>Stop Recording</button>
             <audio id="player" controls></audio>
-            <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
+            <form id="upload-form" action="/login" method="POST" enctype="multipart/form-data">
+                <!-- write the code to take the email id from the user -->
+                <label for="email">Email ID:</label>
+                <input type="email" id="email" name="email" required>
                 <input type="file" id="audio-file" name="audio-file" hidden>
                 <input type="submit" value="Submit">
             </form>
             <div class="registration">
                 <p>Don't have an account? <a href="/register">Register</a></p>
             </div>
-            <P id="result"></P>
+            <!-- <P id="result"></P> -->
         </div>
     <!-- Copilot: Add JavaScript to handle recording and uploading audio files -->
     <script src="{{ url_for('static', filename='scripts/app.js') }}"></script>

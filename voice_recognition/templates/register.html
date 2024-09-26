@@ -13,7 +13,7 @@
     <div id="content-box">
         <h1>Register Your Voice</h1>
         <form id="registration-form" action="/register" method="POST" enctype="multipart/form-data">
-            <label for="email">Email ID:</label>
+            <label for="email">Email ID:</label> 
             <input type="email" id="email" name="email" required>
             <br>
             <label for="user-id">User ID:</label>
@@ -32,7 +32,7 @@
         <p id="result"></p>
     </div>
     <!-- Add JavaScript to handle recording and uploading audio files -->
-    <script src="{{ url_for('static', filename='scripts/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/register.js') }}"></script>
     <!-- Include wavefile library -->
     <script src="https://cdn.jsdelivr.net/npm/wavefile@12.0.0/dist/wavefile.min.js"></script>
 </body>
