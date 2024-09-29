@@ -49,7 +49,7 @@ recordBtn.addEventListener("click", async () => {
 // Add event listener to the form submission
 document
   .getElementById("upload-form")
-  .addEventListener("submit", function (event) {
+  .addEventListener("submit", async function (event) {
     event.preventDefault();
 
     // Create a FormData object and append the audio file
@@ -60,42 +60,65 @@ document
     formData.append("audio-file", fileInput.files[0]);
 
     //Send the form data to the server using fetch
-    fetch("/login", {
-      method: "POST",
-      body: formData,
-    })
-      .then(async (response) => {
-        const data = await response.json();
-        // Check if there was an error
-        if (data.error) {
-          document.getElementById("result").innerText = data.error;
-        } else if (response.ok) {
-          localStorage.setItem("access_token", data.access_token);
-          window.location.href = "/secret";
-        } else {
-          document.getElementById("result").innerText =
-            "Unknown error occurred";
-        }
-      })
-      // .then((response) => response.json())
-      // .then((data) => {
-      //   // Display the result or error message
-      //   if (data.error) {
-      //     document.getElementById("result").innerText = data.error;
-      //   } else if (response.ok) {
-      //     localStorage.setItem("access_token", data.access_token);
-      //     window.location.href = "/secret";
-      //   } else {
-      //     document.getElementById(
-      //       "result"
-      //     ).innerText = `somewhat error unknow error what is that who nows`;
-      //   }
-      // })
-      .catch((error) => {
-        console.error("Error:", error);
-        document.getElementById("result").innerText =
-          "An error occurred while processing the file";
+    // fetch("/login", {
+    //   method: "POST",
+    //   body: formData,
+    // })
+    //   .then(async (response) => {
+    //     const data = await response.json();
+    //     // Check if there was an error
+    //     if (data.error) {
+    //       document.getElementById("result").innerText = data.error;
+    //     } else if (response.ok) {
+    //       localStorage.setItem("access_token", data.access_token);
+    //       window.location.href = "/secret";
+    //     } else {
+    //       document.getElementById("result").innerText =
+    //         "Unknown error occurred";
+    //     }
+    //   })
+    //   // .then((response) => response.json())
+    //   // .then((data) => {
+    //   //   // Display the result or error message
+    //   //   if (data.error) {
+    //   //     document.getElementById("result").innerText = data.error;
+    //   //   } else if (response.ok) {
+    //   //     localStorage.setItem("access_token", data.access_token);
+    //   //     window.location.href = "/secret";
+    //   //   } else {
+    //   //     document.getElementById(
+    //   //       "result"
+    //   //     ).innerText = `somewhat error unknow error what is that who nows`;
+    //   //   }
+    //   // })
+    //   .catch((error) => {
+    //     console.error("Error:", error);
+    //     document.getElementById("result").innerText =
+    //       "An error occurred while processing the file";
+    //   });
+    try {
+      const response = await fetch('/login', {
+          method: 'POST',
+          body: formData
       });
+
+      const data = await response.json();
+
+      if (response.ok && data.access_token) {
+          // Store the JWT token in local storage
+          localStorage.setItem('access_token', data.access_token);
+          // Redirect to the secret page
+          
+      } else if (response.status === 401) {
+          // Display the result message from the server
+          document.getElementById('result').innerText = data.result || 'Authentication failed';
+      } else {
+          document.getElementById('result').innerText = 'Unknown error occurred';
+      }
+  } catch (error) {
+      console.error('Error:', error);
+      document.getElementById('result').innerText = 'An error occurred while processing your request.';
+  }
   });
 
 // Add event listener to the stop button
