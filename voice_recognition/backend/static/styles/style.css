@@ -1,83 +1,100 @@
 /* Style for the body with a gradient background */
 body {
-    font-family: 'Arial', sans-serif;
-    height: 100vh;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, #74ebd5, #acb6e5); /* Gradient background */
-    transition: background 0.5s ease;
-  }
-  
-  /* Centering the content in a box with shadow */
+  font-family: "Arial", sans-serif;
+  height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(
+    135deg,
+    #74ebd5,
+    #acb6e5
+  ); /* Gradient background */
+  transition: background 0.5s ease;
+}
+
+/* Centering the content in a box with shadow */
+#content-box {
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 300px;
+}
+/* make the header div have a seprated top space stylishtically and the font size of it lot higher use the stylish font */
+#header {
+  margin-top: 10px; /* Separate top space */
+  background-color: rgba(255, 255, 255, 0.5); /* Translucent background */
+  padding: 20px;
+  width:100%;
+  border-radius: 10px;
+  text-align: center;
+  font-family: "Pacifico", cursive; /* Stylish font */
+  max-width: 800px;
+  font-size: 5vw; /* Responsive font size */
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+}
+/* Style for the heading */
+h1 {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 24px;
+}
+
+/* Button styling */
+button {
+  display: inline-block;
+  padding: 10px 20px;
+  margin: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+/* Disabled button styling */
+button:disabled {
+  background-color: #9e9e9e;
+  cursor: not-allowed;
+}
+
+/* Audio player styling */
+audio {
+  margin-top: 20px;
+  width: 100%;
+}
+
+/* Submit button styling */
+input[type="submit"] {
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  margin-top: 20px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+input[type="submit"]:hover {
+  background-color: #0069d9;
+}
+
+/* Adding responsiveness */
+@media (max-width: 600px) {
   #content-box {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 300px;
+    width: 90%;
   }
-  
-  /* Style for the heading */
-  h1 {
-    margin-bottom: 20px;
-    color: #333;
-    font-size: 24px;
-  }
-  
-  /* Button styling */
-  button {
-    display: inline-block;
-    padding: 10px 20px;
-    margin: 10px;
-    border: none;
-    border-radius: 5px;
-    background-color: #4CAF50;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  button:hover {
-    background-color: #45a049;
-  }
-  
-  /* Disabled button styling */
-  button:disabled {
-    background-color: #9E9E9E;
-    cursor: not-allowed;
-  }
-  
-  /* Audio player styling */
-  audio {
-    margin-top: 20px;
-    width: 100%;
-  }
-  
-  /* Submit button styling */
-  input[type="submit"] {
-    background-color: #007BFF;
-    color: white;
-    border-radius: 5px;
-    border: none;
-    padding: 10px;
-    width: 100%;
-    margin-top: 20px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-  }
-  
-  input[type="submit"]:hover {
-    background-color: #0069d9;
-  }
-  
-  /* Adding responsiveness */
-  @media (max-width: 600px) {
-    #content-box {
-      width: 90%;
-    }
-  }
+}
