@@ -1,5 +1,5 @@
- /* Style for the body with a gradient background */
- body {
+/* Style for the body with a gradient background */
+body {
     font-family: 'Arial', sans-serif;
     height: 100vh;
     margin: 0;
@@ -7,27 +7,28 @@
     justify-content: center;
     align-items: center;
     background: linear-gradient(135deg, #74ebd5, #acb6e5); /* Gradient background */
-}
-
-/* Centering the content in a box with shadow */
-#content-box {
+    transition: background 0.5s ease;
+  }
+  
+  /* Centering the content in a box with shadow */
+  #content-box {
     background-color: #fff;
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
     text-align: center;
     width: 300px;
-}
-
-/* Style for the heading */
-h1 {
+  }
+  
+  /* Style for the heading */
+  h1 {
     margin-bottom: 20px;
     color: #333;
     font-size: 24px;
-}
-
-/* Button styling */
-button {
+  }
+  
+  /* Button styling */
+  button {
     display: inline-block;
     padding: 10px 20px;
     margin: 10px;
@@ -38,26 +39,26 @@ button {
     font-size: 16px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-}
-
-button:hover {
+  }
+  
+  button:hover {
     background-color: #45a049;
-}
-
-/* Disabled button styling */
-button:disabled {
+  }
+  
+  /* Disabled button styling */
+  button:disabled {
     background-color: #9E9E9E;
     cursor: not-allowed;
-}
-
-/* Audio player styling */
-audio {
+  }
+  
+  /* Audio player styling */
+  audio {
     margin-top: 20px;
     width: 100%;
-}
-
-/* Submit button styling */
-input[type="submit"] {
+  }
+  
+  /* Submit button styling */
+  input[type="submit"] {
     background-color: #007BFF;
     color: white;
     border-radius: 5px;
@@ -68,15 +69,15 @@ input[type="submit"] {
     cursor: pointer;
     font-size: 16px;
     transition: background-color 0.3s ease;
-}
-
-input[type="submit"]:hover {
+  }
+  
+  input[type="submit"]:hover {
     background-color: #0069d9;
-}
-
-/* Adding responsiveness */
-@media (max-width: 600px) {
+  }
+  
+  /* Adding responsiveness */
+  @media (max-width: 600px) {
     #content-box {
-        width: 90%;
+      width: 90%;
     }
-}
+  }

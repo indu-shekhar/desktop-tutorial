@@ -3,21 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Voice authentication</title>
+    <title>Voice Authentication</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='styles/style.css') }}"
     />
+    <style>
+      /* Enlarge and style the title */
+      h1 {
+        font-size: 36px;
+        color: #333;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      /* Additional styles for the header */
+      #header {
+        margin-bottom: 30px;
+      }
+    </style>
   </head>
   <body>
-    <!-- <h1>Enroll Your Voice</h1>
-    <button id="record-btn">Start Recording</button>
-    <button id="stop-btn" disabled>Stop Recording</button>
-    <audio id="player" controls></audio>
-    <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
-        <input type="file" id="audio-file" name="audio-file" hidden>
-        <input type="submit" value="Submit">
-    </form> -->
     <div id="header">
       <h1>Voice Authentication</h1>
     </div>
@@ -32,7 +38,6 @@
         method="POST"
         enctype="multipart/form-data"
       >
-        <!-- write the code to take the email id from the user -->
         <label for="email">Email ID:</label>
         <input type="email" id="email" name="email" required />
         <input type="file" id="audio-file" name="audio-file" hidden />
@@ -43,9 +48,56 @@
       </div>
       <p id="result"></p>
     </div>
-    <!-- Copilot: Add JavaScript to handle recording and uploading audio files -->
+    <!-- Add JavaScript to handle recording and uploading audio files -->
     <script src="{{ url_for('static', filename='scripts/app.js') }}"></script>
     <!-- Include wavefile library -->
     <script src="https://cdn.jsdelivr.net/npm/wavefile@12.0.0/dist/wavefile.min.js"></script>
+    <!-- Add JavaScript for dynamic gradient background -->
+    <script>
+      const colors = [
+        [62, 35, 255],
+        [60, 255, 60],
+        [255, 35, 98],
+        [45, 175, 230],
+        [255, 0, 255],
+        [255, 128, 0]
+      ];
+
+      let step = 0;
+      const gradientSpeed = 0.002;
+      const colorIndices = [0, 1, 2, 3];
+
+      function updateGradient() {
+        const c0_0 = colors[colorIndices[0]];
+        const c0_1 = colors[colorIndices[1]];
+        const c1_0 = colors[colorIndices[2]];
+        const c1_1 = colors[colorIndices[3]];
+
+        const istep = 1 - step;
+        const r1 = Math.round(istep * c0_0[0] + step * c0_1[0]);
+        const g1 = Math.round(istep * c0_0[1] + step * c0_1[1]);
+        const b1 = Math.round(istep * c0_0[2] + step * c0_1[2]);
+        const color1 = `rgb(${r1},${g1},${b1})`;
+
+        const r2 = Math.round(istep * c1_0[0] + step * c1_1[0]);
+        const g2 = Math.round(istep * c1_0[1] + step * c1_1[1]);
+        const b2 = Math.round(istep * c1_0[2] + step * c1_1[2]);
+        const color2 = `rgb(${r2},${g2},${b2})`;
+
+        document.body.style.background = `linear-gradient(to right, ${color1}, ${color2})`;
+
+        step += gradientSpeed;
+        if (step >= 1) {
+          step %= 1;
+          colorIndices[0] = colorIndices[1];
+          colorIndices[2] = colorIndices[3];
+
+          colorIndices[1] = (colorIndices[1] + Math.floor(1 + Math.random() * (colors.length - 1))) % colors.length;
+          colorIndices[3] = (colorIndices[3] + Math.floor(1 + Math.random() * (colors.length - 1))) % colors.length;
+        }
+      }
+
+      setInterval(updateGradient, 10);
+    </script>
   </body>
 </html>
