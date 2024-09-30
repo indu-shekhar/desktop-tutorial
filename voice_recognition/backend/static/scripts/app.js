@@ -67,7 +67,9 @@ document
       const data = await response.json();
 
       if (response.ok && data.access_token) {
-        
+        document.cookie = `access_token=${data.access_token};path=/;`;
+        window.location.href = '/secret';
+        return;
         
         // Store the JWT token in local storage
         //   localStorage.setItem('access_token', data.access_token);

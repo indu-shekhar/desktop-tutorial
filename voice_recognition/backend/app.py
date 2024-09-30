@@ -3,8 +3,11 @@ from flask import Flask, render_template, request, jsonify
 from flask_jwt_extended import (
     JWTManager,
     create_access_token,
-    jwt_required,
+    #jwt_required,
     get_jwt_identity,
+    # verify_jwt_in_request,
+    get_jwt,        
+    decode_token,
 )
 from flask_sqlalchemy import SQLAlchemy
 from speechbrain.inference import SpeakerRecognition
@@ -143,11 +146,22 @@ def upload_file():
 
 
 @app.route("/secret", methods=["GET"])
-@jwt_required()
 def secret():
-    current_user = get_jwt_identity()
-    return render_template("secret.html")
-    # return jsonify({"message": f"Welcome {current_user} to the secret page!"}), 200
+    token=request.cookies.get("access_token")
+    if not token:
+        return jsonify({"error": "Missing access token"}), 401
+    try:
+        # Manually decode the token from the cookie
+        decoded_token = decode_token(token)
+        current_user = decoded_token['sub']  # 'sub' contains the user identity (email)
+        #check whether user is in the database
+        user = User.query.filter_by(email=current_user).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        # Render the secret page
+        return render_template("secret.html")
+    except Exception as e: 
+        return jsonify({"error": str(e)}), 401
 
 
 # Run the Flask application
