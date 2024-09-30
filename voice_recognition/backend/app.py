@@ -123,7 +123,7 @@ def upload_file():
             print(f"Score: {score}, Prediction: {prediction}")
             if score > 0.50:
                 # redirect the client to the secret page route
-                email=request.form.get("email")
+                email = request.form.get("email")
                 access_token = create_access_token(identity=email)
                 return jsonify({"access_token": access_token}), 200
             else:
@@ -146,8 +146,8 @@ def upload_file():
 @jwt_required()
 def secret():
     current_user = get_jwt_identity()
-    # render_template("secret.html")
-    return jsonify({"message": f"Welcome {current_user} to the secret page!"}), 200
+    return render_template("secret.html")
+    # return jsonify({"message": f"Welcome {current_user} to the secret page!"}), 200
 
 
 # Run the Flask application

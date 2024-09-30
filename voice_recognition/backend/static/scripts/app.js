@@ -58,44 +58,6 @@ document
     var email = document.getElementById("email").value;
     formData.append("email", email);
     formData.append("audio-file", fileInput.files[0]);
-
-    //Send the form data to the server using fetch
-    // fetch("/login", {
-    //   method: "POST",
-    //   body: formData,
-    // })
-    //   .then(async (response) => {
-    //     const data = await response.json();
-    //     // Check if there was an error
-    //     if (data.error) {
-    //       document.getElementById("result").innerText = data.error;
-    //     } else if (response.ok) {
-    //       localStorage.setItem("access_token", data.access_token);
-    //       window.location.href = "/secret";
-    //     } else {
-    //       document.getElementById("result").innerText =
-    //         "Unknown error occurred";
-    //     }
-    //   })
-    //   // .then((response) => response.json())
-    //   // .then((data) => {
-    //   //   // Display the result or error message
-    //   //   if (data.error) {
-    //   //     document.getElementById("result").innerText = data.error;
-    //   //   } else if (response.ok) {
-    //   //     localStorage.setItem("access_token", data.access_token);
-    //   //     window.location.href = "/secret";
-    //   //   } else {
-    //   //     document.getElementById(
-    //   //       "result"
-    //   //     ).innerText = `somewhat error unknow error what is that who nows`;
-    //   //   }
-    //   // })
-    //   .catch((error) => {
-    //     console.error("Error:", error);
-    //     document.getElementById("result").innerText =
-    //       "An error occurred while processing the file";
-    //   });
     try {
       const response = await fetch('/login', {
           method: 'POST',
@@ -105,10 +67,31 @@ document
       const data = await response.json();
 
       if (response.ok && data.access_token) {
-          // Store the JWT token in local storage
-          localStorage.setItem('access_token', data.access_token);
-          // Redirect to the secret page
-          
+        
+        
+        // Store the JWT token in local storage
+        //   localStorage.setItem('access_token', data.access_token);
+        //   // Redirect to the secret page
+        //   try {
+        //     const response = await fetch('/secret', {
+        //         method: 'GET',
+        //         headers: {
+        //             'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        //         }
+        //     });
+    
+        //     const data = await response.json();
+    
+        //     if (response.ok) {
+        //         document.getElementById('result').textContent = data.message;
+        //     } else {
+        //         alert('Access denied. Please log in again.');
+        //         window.location.href = '/';
+        //     }
+        // } catch (error) {
+        //     console.error('Error:', error);
+        // }
+
       } else if (response.status === 401) {
           // Display the result message from the server
           document.getElementById('result').innerText = data.result || 'Authentication failed';
