@@ -18,10 +18,37 @@ engine = pyttsx3.init()
 # Load and process data for intent recognition
 data = {
     'text': [
-        "What's my account balance?", "Transfer money to John.",
-        "Show my last five transactions."
+        # Check Account Balance
+        "What's my account balance?",
+        "Can you show me my balance?",
+        "Check my current balance.",
+        "I want to see my bank balance.",
+        "Show me the available balance.",
+
+        # Transfer Money
+        "Transfer money to John.",
+        "Send $500 to my savings account.",
+        "I need to transfer funds to my checking account.",
+        "Move $1000 to account number 123456.",
+        "I want to transfer money.",
+
+        # Get Last Five Transactions
+        "Show my last five transactions.",
+        "What are my recent transactions?",
+        "Can I see my previous transactions?",
+        "Display the last five transactions.",
+        "I want to check my transaction history."
     ],
-    'intent': ["CheckBalance", "TransferMoney", "GetLastTransactions"]
+    'intent': [
+        # Check Account Balance
+        "CheckBalance", "CheckBalance", "CheckBalance", "CheckBalance", "CheckBalance",
+
+        # Transfer Money
+        "TransferMoney", "TransferMoney", "TransferMoney", "TransferMoney", "TransferMoney",
+
+        # Get Last Five Transactions
+        "GetLastTransactions", "GetLastTransactions", "GetLastTransactions", "GetLastTransactions", "GetLastTransactions"
+    ]
 }
 df = pd.DataFrame(data)
 X_train, X_test, y_train, y_test = train_test_split(df['text'], df['intent'], test_size=0.2, random_state=42)
