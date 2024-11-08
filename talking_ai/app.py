@@ -15,8 +15,8 @@ CORS(app)
 # Initialize text-to-speech
 engine = pyttsx3.init()
 
-# Load and process data for intent recognition
-data = {
+# Load and process bank_data for intent recognition
+bank_data = {
     'text': [
         # Check Account Balance
         "What's my account balance?",
@@ -50,15 +50,15 @@ data = {
         "GetLastTransactions", "GetLastTransactions", "GetLastTransactions", "GetLastTransactions", "GetLastTransactions"
     ]
 }
-df = pd.DataFrame(data)
+df = pd.DataFrame(bank_data)
 X_train, X_test, y_train, y_test = train_test_split(df['text'], df['intent'], test_size=0.2, random_state=42)
 vectorizer = TfidfVectorizer()
 X_train_vec = vectorizer.fit_transform(X_train)
-model = LogisticRegression().fit(X_train_vec, y_train)
+bank_model = LogisticRegression().fit(X_train_vec, y_train)
 
 def predict_intent(text):
     text_vec = vectorizer.transform([text])
-    return model.predict(text_vec)[0]
+    return bank_model.predict(text_vec)[0]
 
 # Database setup
 conn = sqlite3.connect('bank.db', check_same_thread=False)
@@ -69,13 +69,15 @@ def index():
 
 @app.route('/process_command', methods=['POST'])
 def process_command():
-    data = request.json
-    command = data.get("command")
+    bank_data = request.json
+    command = bank_data.get("command")
     intent = predict_intent(command)
 
     if intent == "CheckBalance":
-        balance = get_balance(123)  # Example account
-        response = f"Your balance is ${balance:.2f}" if balance else "Account not found."
+        # balance = get_balance(123)  # Example account
+        # response = f"Your balance is ${balance:.2f}" if balance else "Account not found."
+        response = "Your balance is $1000."
+        
     elif intent == "TransferMoney":
         # Example transfer command handling
         response = "Transferred $100 to John Doe's account."

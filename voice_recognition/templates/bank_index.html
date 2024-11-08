@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Activated Banking</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/bank_styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Voice Activated Banking System</h1>
+        </header>
+        <main>
+            <section class="voice-command">
+                <button id="voice-btn"><i class="fas fa-microphone"></i> Speak</button>
+                <p id="output">Press the button and give a command.</p>
+            </section>
+            <section class="features">
+                <div class="feature">
+                    <i class="fas fa-wallet"></i>
+                    <h2>Check Balance</h2>
+                    <p>Quickly check your account balance with a simple voice command.</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-exchange-alt"></i>
+                    <h2>Transfer Money</h2>
+                    <p>Transfer money to any account effortlessly using your voice.</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-history"></i>
+                    <h2>Transaction History</h2>
+                    <p>View your recent transactions with a single voice command.</p>
+                </div>
+            </section>
+        </main>
+        <footer>
+            <p>&copy; 2023 Voice Activated Banking. All rights reserved.</p>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='scripts/bank_script.js') }}"></script>
+</body>
+</html>
