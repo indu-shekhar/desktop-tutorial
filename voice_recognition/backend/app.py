@@ -13,6 +13,7 @@ from flask_sqlalchemy import SQLAlchemy
 from speechbrain.inference import SpeakerRecognition
 import os
 import io
+import re
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import speech_recognition as sr
@@ -231,7 +232,31 @@ def predict_intent(text):
     return bank_model.predict(text_vec)[0]
 
 @app.route('/process_command', methods=['POST'])
+def extract_name_and_amount(text):
+    # Regex to handle various sentence formats
+    pattern = r'(?i)(?:send|transfer|give|forward|pay|dispatch|deliver|allocate|wire|remit)?\s*(?:\$)?(\d+)\s*(?:to|for|towards)?\s*([a-zA-Z]+)|([a-zA-Z]+)\s*(?:needs|requires|deserves|expects|asked for|requested|waiting for|could use|should receive|might need)\s*(?:\$)?(\d+)'
+    match = re.search(pattern, text)
+
+    if match:
+        # Check which format matched
+        if match.group(1) and match.group(2):  # Format: "Send $100 to John"
+            amount = match.group(1)
+            name = match.group(2)
+        elif match.group(3) and match.group(4):  # Format: "John needs $100"
+            amount = match.group(4)
+            name = match.group(3)
+        else:
+            return None
+        return {"name": name.capitalize(), "amount": amount}
+    else:
+        return None
+
 def process_command():
+    token = request.headers.get('Authorization').split()[1]
+    decoded_token = decode_token(token)
+    email = decoded_token.get('sub')
+    if not email:
+        return jsonify({"error": "Invalid token: email not found"}), 401
     bank_data = request.json
     command = bank_data.get("command")
     intent = predict_intent(command)
@@ -239,13 +264,45 @@ def process_command():
     if intent == "CheckBalance":
         # balance = get_balance(123)  # Example account
         # response = f"Your balance is ${balance:.2f}" if balance else "Account not found."
-        response = "Your balance is $1000."
+        # response = "Your balance is $1000."
+        account = User.query.filter_by(email=email).first()
+        if account:
+            return jsonify({"balance": account.balance})
+        else:
+            return jsonify({"error": "Account not found"}), 404
         
     elif intent == "TransferMoney":
         # Example transfer command handling
-        response = "Transferred $100 to John Doe's account."
+        name_and_amount = extract_name_and_amount(command)
+        if name_and_amount:
+            name = name_and_amount.get("name")
+            amount = name_and_amount.get("amount")
+            # Transfer the amount to the specified account
+            from_account = User.query.filter_by(email=email).first()
+            to_account = User.query.filter_by(email=name).first()
+
+            if not from_account or not to_account:
+                return jsonify({"error": "Invalid account number"}), 404
+
+            if from_account.balance < amount:
+                return jsonify({"error": "Insufficient balance"}), 400
+
+            from_account.balance -= amount
+            to_account.balance += amount
+
+            db.session.add(TransactionHistory(acc_email=email, sent_to_email=name, transaction_type="Debit", amount=amount))
+            db.session.add(TransactionHistory(acc_num=name, sent_to_email=email, transaction_type="Credit", amount=amount))
+            db.session.commit()
+
+            return jsonify({"message": f"Transferred ${amount} to {name}'s account."})
+
     elif intent == "GetLastTransactions":
-        response = "Your last five transactions are displayed."
+        transactions = TransactionHistory.query.filter_by(acc_email=email).order_by(TransactionHistory.timestamp.desc()).limit(5).all()
+        if transactions:
+            history = [{"transaction_id": t.transaction_id, "transaction_type": t.transaction_type, "amount": t.amount, "timestamp": t.timestamp} for t in transactions]
+            return jsonify({"transactions": history})
+        else:
+            return jsonify({"error": "No transaction history found"}), 404
     else:
         response = "I'm sorry, I didn't understand that."
 

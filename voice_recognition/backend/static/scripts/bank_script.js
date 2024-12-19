@@ -70,10 +70,14 @@ function startRecognition() {
 }
 
 async function sendVoiceCommand(command) {
+    const token = document.cookie.split('; ').find(row => row.startsWith('access_token=')).split('=')[1];
     try {
         const response = await fetch('/process_command', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify({ command })
         });
         const data = await response.json();
