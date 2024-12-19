@@ -94,6 +94,7 @@ class User(db.Model):
         self.email = email
         self.user_id = user_id
         self.audio_file = audio_file
+        self.balance = 10000.0
 
 class TransactionHistory(db.Model):
     transaction_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -230,8 +231,6 @@ def secret():
 def predict_intent(text):
     text_vec = vectorizer.transform([text])
     return bank_model.predict(text_vec)[0]
-
-@app.route('/process_command', methods=['POST'])
 def extract_name_and_amount(text):
     # Regex to handle various sentence formats
     pattern = r'(?i)(?:send|transfer|give|forward|pay|dispatch|deliver|allocate|wire|remit)?\s*(?:\$)?(\d+)\s*(?:to|for|towards)?\s*([a-zA-Z]+)|([a-zA-Z]+)\s*(?:needs|requires|deserves|expects|asked for|requested|waiting for|could use|should receive|might need)\s*(?:\$)?(\d+)'
@@ -251,6 +250,7 @@ def extract_name_and_amount(text):
     else:
         return None
 
+@app.route('/process_command', methods=['POST'])
 def process_command():
     token = request.headers.get('Authorization').split()[1]
     decoded_token = decode_token(token)
