@@ -86,6 +86,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     user_id = db.Column(db.String(120), nullable=False)
+    balance = db.Column(db.Float, nullable=False)
     audio_file = db.Column(db.LargeBinary, nullable=False)
 
     def __init__(self, email, user_id, audio_file):
@@ -93,6 +94,13 @@ class User(db.Model):
         self.user_id = user_id
         self.audio_file = audio_file
 
+class TransactionHistory(db.Model):
+    transaction_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    acc_email = db.Column(db.String(120), db.ForeignKey('user.email'), nullable=False)
+    sent_to_email = db.Column(db.String(120), nullable=True)
+    transaction_type = db.Column(db.String(50), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    timestamp = db.Column(db.DateTime, server_default=db.func.now())
 
 # Define the route for the home page
 @app.route("/")

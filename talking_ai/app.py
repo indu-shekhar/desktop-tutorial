@@ -63,11 +63,11 @@ def predict_intent(text):
 # Database setup
 conn = sqlite3.connect('bank.db', check_same_thread=False)
 cursor = conn.cursor()
-@app.route('/')
-def index():
-    return render_template('index.html')
+# @app.route('/')
+# def index():
+#     return render_template('index.html')
 
-@app.route('/process_command', methods=['POST'])
+# @app.route('/process_command', methods=['POST'])
 def process_command():
     bank_data = request.json
     command = bank_data.get("command")
