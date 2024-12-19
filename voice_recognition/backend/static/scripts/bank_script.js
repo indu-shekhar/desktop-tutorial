@@ -81,10 +81,27 @@ async function sendVoiceCommand(command) {
             body: JSON.stringify({ command })
         });
         const data = await response.json();
-        output.textContent = data.message;
-        speak(data.message);
+
+        if (data.error) {
+            output.textContent = `Error: ${data.error}`;
+            speak(`Error: ${data.error}`);
+        } else if (data.balance !== undefined) {
+            output.textContent = `Your balance is $${data.balance.toFixed(2)}`;
+            speak(`Your balance is $${data.balance.toFixed(2)}`);
+        } else if (data.transactions) {
+            let transactionHistory = "Your last five transactions are:\n";
+            data.transactions.forEach((transaction, index) => {
+                transactionHistory += `${index + 1}. ${transaction.transaction_type} of $${transaction.amount.toFixed(2)} on ${new Date(transaction.timestamp).toLocaleString()}\n`;
+            });
+            output.textContent = transactionHistory;
+            speak(transactionHistory);
+        } else {
+            output.textContent = data.message;
+            speak(data.message);
+        }
     } catch (error) {
         output.textContent = "Error communicating with the server.";
+        speak("Error communicating with the server.");
     }
 }
 

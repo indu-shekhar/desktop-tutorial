@@ -305,8 +305,7 @@ def process_command():
             return jsonify({"error": "No transaction history found"}), 404
     else:
         response = "I'm sorry, I didn't understand that."
-
-    return jsonify({"message": response})
+        return jsonify({"message": response})
 
 
 # Run the Flask application
