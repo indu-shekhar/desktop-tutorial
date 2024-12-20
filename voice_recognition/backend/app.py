@@ -125,7 +125,7 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/register", methods=["POST"])
+@app.route("/register", methods=["POST", "GET"])
 def register():
     if request.method == "GET":
         return render_template("register.html")
@@ -181,7 +181,7 @@ def register():
             os.remove(face_image_path)
 
 
-@app.route("/login", methods=["POST","GET"])
+@app.route("/login", methods=["POST"])
 def login():
     if "audio-file" not in request.files or "face-image" not in request.files:
         return jsonify({"error": "Audio file or face image missing"}), 400

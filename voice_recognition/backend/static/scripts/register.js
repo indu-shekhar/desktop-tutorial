@@ -79,3 +79,57 @@ function takeSnapshot() {
       stream = null;
     });
 }
+// Hide the audio player initially
+audioPlayer.style.display = "none";
+
+// Add event listener to the form submission
+document.getElementById("registration-form").addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  // Create a FormData object and append the audio file
+  var formData = new FormData();
+  var fileInput = document.getElementById("audio-file");
+  var email = document.getElementById("email").value;
+  var user_id = document.getElementById("user_id").value;
+  formData.append("audio-file", fileInput.files[0]);
+  formData.append("face-image", document.getElementById("face-image").files[0]);
+  formData.append("email", email);
+  formData.append("user_id", user_id);
+
+  // Log whether the audio file is attached to the form
+  if (fileInput.files.length > 0) {
+    console.log("Audio file attached to the form.");
+  } else {
+    console.log("No audio file attached to the form.");
+  }
+
+  // Send the form data to the server using fetch
+  fetch("/register", {
+    method: "POST",
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      // Display the result or error message
+      if (data.error) {
+        document.getElementById("result").innerText = data.error;
+      } else {
+        document.getElementById("result").innerText = data.message;
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      document.getElementById("result").innerText = "An error occurred while processing the file";
+    });
+});
+
+// Add event listener to the stop button
+stopBtn.addEventListener("click", () => {
+  // Stop the recording
+  mediaRecorder.stop();
+  // Enable the record button and disable the stop button
+  recordBtn.disabled = false;
+  stopBtn.disabled = true;
+  // Show the audio player
+  audioPlayer.style.display = "block";
+});
