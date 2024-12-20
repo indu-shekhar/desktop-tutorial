@@ -181,7 +181,7 @@ def register():
             os.remove(face_image_path)
 
 
-@app.route("/login", methods=["POST"])
+@app.route("/login", methods=["POST","GET"])
 def login():
     if "audio-file" not in request.files or "face-image" not in request.files:
         return jsonify({"error": "Audio file or face image missing"}), 400
