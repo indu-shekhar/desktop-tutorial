@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Voice Authentication</title>
+    <title>Voice Authentication - Login</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='styles/style.css') }}"
@@ -25,10 +25,12 @@
   </head>
   <body>
     <div id="header">
-      <h1>Voice Authentication</h1>
+      <h1>Voice Authentication - Login</h1>
     </div>
     <div id="content-box">
-      <h1>Enroll Your Voice</h1>
+      <h1>Login with Your Voice and Face</h1>
+
+      <!-- Voice Authentication Section -->
       <button id="record-btn">Start Recording</button>
       <button id="stop-btn" disabled>Stop Recording</button>
       <audio id="player" controls></audio>
@@ -41,18 +43,28 @@
         <label for="email">Email ID:</label>
         <input type="email" id="email" name="email" required />
         <input type="file" id="audio-file" name="audio-file" hidden />
+
+        <!-- Face Authentication Section -->
+        <label for="face-image">Capture Your Face Image:</label>
+        <button type="button" id="capture-btn">Capture Image</button>
+        <video id="camera" autoplay style="display: none"></video>
+        <canvas id="snapshot" style="display: none"></canvas>
+        <img id="face-preview" alt="Face preview" style="display: none" />
+        <input type="file" id="face-image" name="face-image" hidden />
+        <br />
+
         <input type="submit" value="Submit" />
       </form>
+
       <div class="registration">
         <p>Don't have an account? <a href="/register">Register</a></p>
       </div>
       <p id="result"></p>
     </div>
-    <!-- Add JavaScript to handle recording and uploading audio files -->
+
+    <!-- JavaScript -->
     <script src="{{ url_for('static', filename='scripts/app.js') }}"></script>
-    <!-- Include wavefile library -->
     <script src="https://cdn.jsdelivr.net/npm/wavefile@12.0.0/dist/wavefile.min.js"></script>
-    <!-- Add JavaScript for dynamic gradient background -->
     <script>
       const colors = [
         [62, 35, 255],
