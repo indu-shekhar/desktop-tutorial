@@ -43,44 +43,55 @@ voice_model = SpeakerRecognition.from_hparams(
 
 # Training the intent recognition model
 bank_data = {
-    'text': [
+    "text": [
         # Check Account Balance
         "What's my account balance?",
         "Can you show me my balance?",
         "Check my current balance.",
         "I want to see my bank balance.",
         "Show me the available balance.",
-
         # Transfer Money
         "Transfer money to John.",
         "Send $500 to my savings account.",
         "I need to transfer funds to my checking account.",
         "Move $1000 to account number 123456.",
         "I want to transfer money.",
-
         # Get Last Five Transactions
         "Show my last five transactions.",
         "What are my recent transactions?",
         "Can I see my previous transactions?",
         "Display the last five transactions.",
-        "I want to check my transaction history."
+        "I want to check my transaction history.",
     ],
-    'intent': [
+    "intent": [
         # Check Account Balance
-        "CheckBalance", "CheckBalance", "CheckBalance", "CheckBalance", "CheckBalance",
-
+        "CheckBalance",
+        "CheckBalance",
+        "CheckBalance",
+        "CheckBalance",
+        "CheckBalance",
         # Transfer Money
-        "TransferMoney", "TransferMoney", "TransferMoney", "TransferMoney", "TransferMoney",
-
+        "TransferMoney",
+        "TransferMoney",
+        "TransferMoney",
+        "TransferMoney",
+        "TransferMoney",
         # Get Last Five Transactions
-        "GetLastTransactions", "GetLastTransactions", "GetLastTransactions", "GetLastTransactions", "GetLastTransactions"
-    ]
+        "GetLastTransactions",
+        "GetLastTransactions",
+        "GetLastTransactions",
+        "GetLastTransactions",
+        "GetLastTransactions",
+    ],
 }
 df = pd.DataFrame(bank_data)
-X_train, X_test, y_train, y_test = train_test_split(df['text'], df['intent'], test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    df["text"], df["intent"], test_size=0.2, random_state=42
+)
 vectorizer = TfidfVectorizer()
 X_train_vec = vectorizer.fit_transform(X_train)
 bank_model = LogisticRegression().fit(X_train_vec, y_train)
+
 
 # Setting up the database model with email ID, password, audio file in blob format, and face encoding
 class User(db.Model):
@@ -98,21 +109,26 @@ class User(db.Model):
         self.face_encoding = face_encoding
         self.balance = 10000.0
 
+
 class TransactionHistory(db.Model):
     transaction_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    acc_email = db.Column(db.String(120), db.ForeignKey('user.email'), nullable=False)
+    acc_email = db.Column(db.String(120), db.ForeignKey("user.email"), nullable=False)
     sent_to_email = db.Column(db.String(120), nullable=True)
     transaction_type = db.Column(db.String(50), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     timestamp = db.Column(db.DateTime, server_default=db.func.now())
+
 
 # Define the route for the home page
 @app.route("/")
 def index():
     return render_template("index.html")
 
+
 @app.route("/register", methods=["POST"])
 def register():
+    if request.method == "GET":
+        return render_template("register.html")
     if "audio-file" not in request.files or "face-image" not in request.files:
         return jsonify({"error": "Audio file or face image missing"}), 400
 
@@ -148,7 +164,12 @@ def register():
         face_encoding = face_encodings[0]
 
         # Save user to database
-        new_user = User(email=email, user_id=user_id, audio_file=wav_data, face_encoding=face_encoding)
+        new_user = User(
+            email=email,
+            user_id=user_id,
+            audio_file=wav_data,
+            face_encoding=face_encoding,
+        )
         db.session.add(new_user)
         db.session.commit()
 
@@ -158,6 +179,7 @@ def register():
     finally:
         if os.path.exists(face_image_path):
             os.remove(face_image_path)
+
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -202,7 +224,9 @@ def login():
             return jsonify({"error": "No face detected"}), 400
 
         face_encoding = face_encodings[0]
-        match = face_recognition.compare_faces([np.array(user.face_encoding)], face_encoding)[0]
+        match = face_recognition.compare_faces(
+            [np.array(user.face_encoding)], face_encoding
+        )[0]
 
         if not match:
             return jsonify({"error": "Face authentication failed"}), 401
@@ -222,20 +246,20 @@ def login():
 
 @app.route("/secret", methods=["GET"])
 def secret():
-    token=request.cookies.get("access_token")
+    token = request.cookies.get("access_token")
     if not token:
         return jsonify({"error": "Missing access token"}), 401
     try:
         # Manually decode the token from the cookie
         decoded_token = decode_token(token)
-        current_user = decoded_token['sub']  # 'sub' contains the user identity (email)
-        #check whether user is in the database
+        current_user = decoded_token["sub"]  # 'sub' contains the user identity (email)
+        # check whether user is in the database
         user = User.query.filter_by(email=current_user).first()
         if not user:
             return jsonify({"error": "User not found"}), 404
         # Render the secret page
         return render_template("bank_index.html")
-    except Exception as e: 
+    except Exception as e:
         return jsonify({"error": str(e)}), 401
 
 
@@ -243,9 +267,11 @@ def secret():
 def predict_intent(text):
     text_vec = vectorizer.transform([text])
     return bank_model.predict(text_vec)[0]
+
+
 def extract_name_and_amount(text):
     # Regex to handle various sentence formats
-    pattern = r'(?i)(?:send|transfer|give|forward|pay|dispatch|deliver|allocate|wire|remit)?\s*(?:\$)?(\d+)\s*(?:to|for|towards)?\s*([a-zA-Z]+)|([a-zA-Z]+)\s*(?:needs|requires|deserves|expects|asked for|requested|waiting for|could use|should receive|might need)\s*(?:\$)?(\d+)'
+    pattern = r"(?i)(?:send|transfer|give|forward|pay|dispatch|deliver|allocate|wire|remit)?\s*(?:\$)?(\d+)\s*(?:to|for|towards)?\s*([a-zA-Z]+)|([a-zA-Z]+)\s*(?:needs|requires|deserves|expects|asked for|requested|waiting for|could use|should receive|might need)\s*(?:\$)?(\d+)"
     match = re.search(pattern, text)
 
     if match:
@@ -262,11 +288,12 @@ def extract_name_and_amount(text):
     else:
         return None
 
-@app.route('/process_command', methods=['POST'])
+
+@app.route("/process_command", methods=["POST"])
 def process_command():
-    token = request.headers.get('Authorization').split()[1]
+    token = request.headers.get("Authorization").split()[1]
     decoded_token = decode_token(token)
-    email = decoded_token.get('sub')
+    email = decoded_token.get("sub")
     if not email:
         return jsonify({"error": "Invalid token: email not found"}), 401
     bank_data = request.json
@@ -282,7 +309,7 @@ def process_command():
             return jsonify({"balance": account.balance})
         else:
             return jsonify({"error": "Account not found"}), 404
-        
+
     elif intent == "TransferMoney":
         # Example transfer command handling
         name_and_amount = extract_name_and_amount(command)
@@ -304,16 +331,43 @@ def process_command():
             from_account.balance -= amount
             to_account.balance += amount
 
-            db.session.add(TransactionHistory(acc_email=email, sent_to_email=name, transaction_type="Debit", amount=amount))
-            db.session.add(TransactionHistory(acc_email=name, sent_to_email=email, transaction_type="Credit", amount=amount))
+            db.session.add(
+                TransactionHistory(
+                    acc_email=email,
+                    sent_to_email=name,
+                    transaction_type="Debit",
+                    amount=amount,
+                )
+            )
+            db.session.add(
+                TransactionHistory(
+                    acc_email=name,
+                    sent_to_email=email,
+                    transaction_type="Credit",
+                    amount=amount,
+                )
+            )
             db.session.commit()
 
             return jsonify({"message": f"Transferred ${amount} to {name}'s account."})
 
     elif intent == "GetLastTransactions":
-        transactions = TransactionHistory.query.filter_by(acc_email=email).order_by(TransactionHistory.timestamp.desc()).limit(5).all()
+        transactions = (
+            TransactionHistory.query.filter_by(acc_email=email)
+            .order_by(TransactionHistory.timestamp.desc())
+            .limit(5)
+            .all()
+        )
         if transactions:
-            history = [{"transaction_id": t.transaction_id, "transaction_type": t.transaction_type, "amount": t.amount, "timestamp": t.timestamp} for t in transactions]
+            history = [
+                {
+                    "transaction_id": t.transaction_id,
+                    "transaction_type": t.transaction_type,
+                    "amount": t.amount,
+                    "timestamp": t.timestamp,
+                }
+                for t in transactions
+            ]
             return jsonify({"transactions": history})
         else:
             return jsonify({"error": "No transaction history found"}), 404
