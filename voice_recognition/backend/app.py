@@ -276,14 +276,16 @@ def process_command():
         name_and_amount = extract_name_and_amount(command)
         if name_and_amount:
             name = name_and_amount.get("name")
-            amount = name_and_amount.get("amount")
+            print(name)
+            amount = float(name_and_amount.get("amount"))
+            print(amount)
             # Transfer the amount to the specified account
             from_account = User.query.filter_by(email=email).first()
-            to_account = User.query.filter_by(email=name).first()
-
-            if not from_account or not to_account:
+            to_account = User.query.filter_by(user_id=name.lower()).first()
+            if not from_account:
                 return jsonify({"error": "Invalid account number"}), 404
-
+            if not to_account:
+                return jsonify({"error": "Recipient account not found"}), 404
             if from_account.balance < amount:
                 return jsonify({"error": "Insufficient balance"}), 400
 
@@ -291,7 +293,7 @@ def process_command():
             to_account.balance += amount
 
             db.session.add(TransactionHistory(acc_email=email, sent_to_email=name, transaction_type="Debit", amount=amount))
-            db.session.add(TransactionHistory(acc_num=name, sent_to_email=email, transaction_type="Credit", amount=amount))
+            db.session.add(TransactionHistory(acc_email=name, sent_to_email=email, transaction_type="Credit", amount=amount))
             db.session.commit()
 
             return jsonify({"message": f"Transferred ${amount} to {name}'s account."})
