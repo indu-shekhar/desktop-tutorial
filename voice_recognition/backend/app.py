@@ -3,10 +3,6 @@ from flask import Flask, render_template, request, jsonify
 from flask_jwt_extended import (
     JWTManager,
     create_access_token,
-    #jwt_required,
-    get_jwt_identity,
-    # verify_jwt_in_request,
-    get_jwt,        
     decode_token,
 )
 from flask_sqlalchemy import SQLAlchemy
@@ -14,7 +10,6 @@ from speechbrain.inference import SpeakerRecognition
 import os
 import io
 import re
-from flask import Flask, request, jsonify
 from flask_cors import CORS
 import speech_recognition as sr
 import pyttsx3
@@ -22,6 +17,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
+import face_recognition
+import numpy as np
 
 # Initialize the Flask application
 app = Flask(__name__, template_folder="../templates")
@@ -29,19 +26,22 @@ CORS(app)
 
 # Initialize text-to-speech
 engine = pyttsx3.init()
+
 # Load the configuration from the config.py file
 app.config.from_object("config.Config")
+
 # Initialize the JWT manager
 jwt = JWTManager(app)
+
 # Initialize the SQLAlchemy database
 db = SQLAlchemy(app)
+
 # Load the pre-trained speaker recognition model
-model = SpeakerRecognition.from_hparams(
+voice_model = SpeakerRecognition.from_hparams(
     source="speechbrain/spkrec-ecapa-voxceleb", savedir="pretrained_model"
 )
 
-
-#training the intent recognition model
+# Training the intent recognition model
 bank_data = {
     'text': [
         # Check Account Balance
@@ -82,18 +82,20 @@ vectorizer = TfidfVectorizer()
 X_train_vec = vectorizer.fit_transform(X_train)
 bank_model = LogisticRegression().fit(X_train_vec, y_train)
 
-# Setting up the database model with email ID, password, and audio file in blob format
+# Setting up the database model with email ID, password, audio file in blob format, and face encoding
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     user_id = db.Column(db.String(120), nullable=False)
     balance = db.Column(db.Float, nullable=False)
     audio_file = db.Column(db.LargeBinary, nullable=False)
+    face_encoding = db.Column(db.PickleType, nullable=False)
 
-    def __init__(self, email, user_id, audio_file):
+    def __init__(self, email, user_id, audio_file, face_encoding):
         self.email = email
         self.user_id = user_id
         self.audio_file = audio_file
+        self.face_encoding = face_encoding
         self.balance = 10000.0
 
 class TransactionHistory(db.Model):
@@ -107,105 +109,115 @@ class TransactionHistory(db.Model):
 # Define the route for the home page
 @app.route("/")
 def index():
-    # Render the index.html template
     return render_template("index.html")
 
-
-@app.route("/register", methods=["GET", "POST"])
+@app.route("/register", methods=["POST"])
 def register():
-    if request.method == "GET":
-        return render_template("register.html")
-    elif request.method == "POST":
-        if "audio-file" not in request.files:
-            return jsonify({"error": "No file uploaded"}), 400
+    if "audio-file" not in request.files or "face-image" not in request.files:
+        return jsonify({"error": "Audio file or face image missing"}), 400
 
-        file = request.files["audio-file"]
-        # If the user does not select a file, the browser submits an empty file without a filename
-        if file.filename == "":
-            return jsonify({"error": "No selected file"}), 400
+    audio_file = request.files["audio-file"]
+    face_image = request.files["face-image"]
+    email = request.form.get("email")
+    user_id = request.form.get("user_id")
 
-        if file:
-            email = request.form.get("email")
-            user_id = request.form.get("user_id")
-            # Convert the uploaded file to WAV format using pydub
-            existing_user = User.query.filter_by(email=email).first()
-            if existing_user:
-                return jsonify({"error": "Email already registered"}), 400
+    if not audio_file.filename or not face_image.filename:
+        return jsonify({"error": "Files not selected"}), 400
 
-            sound = AudioSegment.from_file(file)
-            wav_io = io.BytesIO()
-            sound.export(wav_io, format="wav")
-            wav_io.seek(0)
-            wav_data = wav_io.read()
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
+        return jsonify({"error": "Email already registered"}), 400
 
-            new_user = User(email=email, user_id=user_id, audio_file=wav_data)
-            try:
-                db.session.add(new_user)
-                db.session.commit()
-            except Exception as e:
-                return jsonify({"error": str(e)}), 500
-            return jsonify({"message": "User registered successfully!"})
+    try:
+        # Process audio file
+        sound = AudioSegment.from_file(audio_file)
+        wav_io = io.BytesIO()
+        sound.export(wav_io, format="wav")
+        wav_io.seek(0)
+        wav_data = wav_io.read()
 
+        # Process face image
+        face_image_path = os.path.join("temp_face.jpg")
+        face_image.save(face_image_path)
+        face = face_recognition.load_image_file(face_image_path)
+        face_encodings = face_recognition.face_encodings(face)
+
+        if not face_encodings:
+            return jsonify({"error": "No face detected"}), 400
+
+        face_encoding = face_encodings[0]
+
+        # Save user to database
+        new_user = User(email=email, user_id=user_id, audio_file=wav_data, face_encoding=face_encoding)
+        db.session.add(new_user)
+        db.session.commit()
+
+        return jsonify({"message": "User registered successfully!"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if os.path.exists(face_image_path):
+            os.remove(face_image_path)
 
 @app.route("/login", methods=["POST"])
-def upload_file():
-    # Check if the POST request has the file part
-    if "audio-file" not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
+def login():
+    if "audio-file" not in request.files or "face-image" not in request.files:
+        return jsonify({"error": "Audio file or face image missing"}), 400
 
-    file = request.files["audio-file"]
-    # If the user does not select a file, the browser submits an empty file without a filename
-    if file.filename == "":
-        return jsonify({"error": "No selected file"}), 400
+    audio_file = request.files["audio-file"]
+    face_image = request.files["face-image"]
+    email = request.form.get("email")
 
-    if file:
-        # Define the upload folder path
-        upload_folder = os.path.join(app.root_path, "../uploaded_files")
-        # Create the upload folder if it doesn't exist
-        if not os.path.exists(upload_folder):
-            os.makedirs(upload_folder)
+    if not audio_file.filename or not face_image.filename:
+        return jsonify({"error": "Files not selected"}), 400
 
-        # Save the uploaded file
-        enrolled_path = os.path.join(upload_folder, file.filename)
-        file.save(enrolled_path)
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
 
-        user = User.query.filter_by(email=request.form.get("email")).first()
-        if not user:
-            return jsonify({"error": "User not found"}), 404
+    try:
+        # Process audio file
+        enrolled_audio = io.BytesIO(user.audio_file)
+        enrolled_audio.seek(0)
+        temp_audio_path = "temp_audio.wav"
+        with open(temp_audio_path, "wb") as f:
+            f.write(enrolled_audio.read())
 
-        reference_audio = io.BytesIO(user.audio_file)
-        reference_audio.seek(0)
-        reference_path = "../uploaded_files/reference_voice.wav"
-        with open(reference_path, "wb") as f:
-            f.write(reference_audio.read())
+        input_audio_path = "input_audio.wav"
+        sound = AudioSegment.from_file(audio_file)
+        sound.export(input_audio_path, format="wav")
 
-        try:
-            # Convert the uploaded file to WAV format
-            sound = AudioSegment.from_file(enrolled_path)
-            sound.export(enrolled_path, format="wav")
+        score, prediction = voice_model.verify_files(input_audio_path, temp_audio_path)
 
-            # Verify the speaker using the pre-trained model
-            score, prediction = model.verify_files(enrolled_path, reference_path)
-            print(f"Score: {score}, Prediction: {prediction}")
-            if score > 0.50:
-                # redirect the client to the secret page route
-                email = request.form.get("email")
-                access_token = create_access_token(identity=email)
-                return jsonify({"access_token": access_token}), 200
-            else:
-                result = "Different speaker"
-                # Return the result as a JSON response
-                return jsonify({"result": result}), 401
-        except Exception as e:
-            # Remove the enrolled file if an error occurs
-            os.remove(enrolled_path)
-            return jsonify({"error": str(e)}), 500
-        finally:
-            # Clean up temporary files
-            if os.path.exists(enrolled_path):
-                os.remove(enrolled_path)
-            if os.path.exists(reference_path):
-                os.remove(reference_path)
+        if score <= 0.50:
+            return jsonify({"error": "Voice authentication failed"}), 401
+
+        # Process face image
+        face_image_path = os.path.join("temp_face.jpg")
+        face_image.save(face_image_path)
+        face = face_recognition.load_image_file(face_image_path)
+        face_encodings = face_recognition.face_encodings(face)
+
+        if not face_encodings:
+            return jsonify({"error": "No face detected"}), 400
+
+        face_encoding = face_encodings[0]
+        match = face_recognition.compare_faces([np.array(user.face_encoding)], face_encoding)[0]
+
+        if not match:
+            return jsonify({"error": "Face authentication failed"}), 401
+
+        access_token = create_access_token(identity=email)
+        return jsonify({"access_token": access_token}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if os.path.exists(temp_audio_path):
+            os.remove(temp_audio_path)
+        if os.path.exists(input_audio_path):
+            os.remove(input_audio_path)
+        if os.path.exists(face_image_path):
+            os.remove(face_image_path)
 
 
 @app.route("/secret", methods=["GET"])

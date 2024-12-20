@@ -19,7 +19,7 @@
       <h1>Voice Authentication - Register</h1>
     </div>
     <div id="content-box">
-      <h1>Register Your Voice</h1>
+      <h1>Register Your Voice and Face</h1>
       <form
         id="registration-form"
         action="/register"
@@ -32,11 +32,24 @@
         <label for="user-id">User ID:</label>
         <input type="text" id="user_id" name="user_id" required />
         <br />
+
+        <!-- Audio Recording Section -->
+        <label for="audio-file">Record Your Voice:</label>
         <button type="button" id="record-btn">Start Recording</button>
         <button type="button" id="stop-btn" disabled>Stop Recording</button>
         <audio id="player" controls></audio>
         <input type="file" id="audio-file" name="audio-file" hidden />
         <br />
+
+        <!-- Face Capture Section -->
+        <label for="face-image">Capture Your Face Image:</label>
+        <button type="button" id="capture-btn">Capture Image</button>
+        <video id="camera" autoplay style="display: none;"></video>
+        <canvas id="snapshot" style="display: none;"></canvas>
+        <img id="face-preview" alt="Face preview" style="display: none;" />
+        <input type="file" id="face-image" name="face-image" hidden />
+        <br />
+
         <input type="submit" value="Register" />
       </form>
       <div class="login">
@@ -44,9 +57,9 @@
       </div>
       <p id="result"></p>
     </div>
-    <!-- Add JavaScript to handle recording and uploading audio files -->
+
+    <!-- JavaScript -->
     <script src="{{ url_for('static', filename='scripts/register.js') }}"></script>
-    <!-- Include wavefile library -->
     <script src="https://cdn.jsdelivr.net/npm/wavefile@12.0.0/dist/wavefile.min.js"></script>
   </body>
 </html>
