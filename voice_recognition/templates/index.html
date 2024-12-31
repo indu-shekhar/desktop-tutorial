@@ -43,7 +43,12 @@
           <canvas id="snapshot"></canvas>
           <img id="face-preview" alt="Face Preview" />
         </section>
-        <form id="upload-form">
+        <form
+          id="upload-form"
+          action="/login"
+          method="POST"
+          enctype="multipart/form-data"
+        >
           <input
             type="email"
             id="email"
