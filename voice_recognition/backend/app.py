@@ -19,6 +19,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 import face_recognition
 import numpy as np
+import tempfile
 
 # Initialize the Flask application
 app = Flask(__name__, template_folder="../templates")
@@ -184,64 +185,64 @@ def register():
 @app.route("/login", methods=["POST"])
 def login():
     if "audio-file" not in request.files or "face-image" not in request.files:
-        return jsonify({"error": "Audio file or face image missing"}), 400
-
+        return jsonify({"error": "File(s) missing"}), 400
+    
     audio_file = request.files["audio-file"]
     face_image = request.files["face-image"]
     email = request.form.get("email")
 
     if not audio_file.filename or not face_image.filename:
-        return jsonify({"error": "Files not selected"}), 400
+        return jsonify({"error": "No file selected"}), 400
 
     user = User.query.filter_by(email=email).first()
     if not user:
         return jsonify({"error": "User not found"}), 404
 
     try:
-        # Process audio file
+        # Load enrolled voice from DB
         enrolled_audio = io.BytesIO(user.audio_file)
         enrolled_audio.seek(0)
-        temp_audio_path = "temp_audio.wav"
-        with open(temp_audio_path, "wb") as f:
-            f.write(enrolled_audio.read())
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as enrolled_tmp:
+            enrolled_tmp.write(enrolled_audio.read())
+            temp_audio_path = enrolled_tmp.name
 
-        input_audio_path = "input_audio.wav"
-        sound = AudioSegment.from_file(audio_file)
-        sound.export(input_audio_path, format="wav")
+        # Process new audio file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as input_tmp:
+            sound = AudioSegment.from_file(audio_file)
+            sound.export(input_tmp.name, format="wav")
+            input_audio_path = input_tmp.name
 
-        score, prediction = voice_model.verify_files(input_audio_path, temp_audio_path)
-
+        # Verify voice
+        score, _ = voice_model.verify_files(input_audio_path, temp_audio_path)
+        print(score)
         if score <= 0.50:
             return jsonify({"error": "Voice authentication failed"}), 401
 
         # Process face image
-        face_image_path = os.path.join("temp_face.jpg")
-        face_image.save(face_image_path)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as face_tmp:
+            face_image.save(face_tmp.name)
+            face_image_path = face_tmp.name
+
+        # Verify face
         face = face_recognition.load_image_file(face_image_path)
         face_encodings = face_recognition.face_encodings(face)
-
         if not face_encodings:
             return jsonify({"error": "No face detected"}), 400
 
         face_encoding = face_encodings[0]
-        match = face_recognition.compare_faces(
-            [np.array(user.face_encoding)], face_encoding
-        )[0]
-
+        match = face_recognition.compare_faces([np.array(user.face_encoding)], face_encoding)[0]
         if not match:
             return jsonify({"error": "Face authentication failed"}), 401
 
+        # Issue token
         access_token = create_access_token(identity=email)
         return jsonify({"access_token": access_token}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
-        if os.path.exists(temp_audio_path):
-            os.remove(temp_audio_path)
-        if os.path.exists(input_audio_path):
-            os.remove(input_audio_path)
-        if os.path.exists(face_image_path):
-            os.remove(face_image_path)
+        for path_var in ["temp_audio_path", "input_audio_path", "face_image_path"]:
+            if path_var in locals() and os.path.exists(locals()[path_var]):
+                os.remove(locals()[path_var])
 
 
 @app.route("/secret", methods=["GET"])
