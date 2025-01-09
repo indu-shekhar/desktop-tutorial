@@ -302,9 +302,6 @@ def process_command():
     intent = predict_intent(command)
 
     if intent == "CheckBalance":
-        # balance = get_balance(123)  # Example account
-        # response = f"Your balance is ${balance:.2f}" if balance else "Account not found."
-        # response = "Your balance is $1000."
         account = User.query.filter_by(email=email).first()
         if account:
             return jsonify({"balance": account.balance})

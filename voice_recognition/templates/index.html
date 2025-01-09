@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -136,4 +136,26 @@
       setInterval(updateGradient, 10);
     </script>
   </body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Voice-Based Login</title>
+</head>
+<body>
+  <h1>Voice-Based Login</h1>
+  <p id="status">Waiting for "hello indu"...</p>
+  <form id="upload-form" enctype="multipart/form-data">
+    <input type="email" id="email" name="email" hidden />
+    <input type="file" id="audio-file" name="audio-file" accept="audio/*" hidden />
+    <input type="file" id="face-image" name="face-image" accept="image/*" hidden />
+  </form>
+  <audio id="player" hidden></audio>
+  <video id="camera" autoplay hidden></video>
+  <canvas id="snapshot" hidden></canvas>
+  <img id="face-preview" alt="face preview" hidden />
+  <p id="result"></p>
+  <script src="{{ url_for('static', filename='scripts/app.js') }}"></script>
+</body>
 </html>
