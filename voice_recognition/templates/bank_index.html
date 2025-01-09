@@ -4,39 +4,105 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voice Activated Banking</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/bank_styles.css') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+      body {
+        font-family: 'Orbitron', sans-serif;
+        background: linear-gradient(135deg, #0a0f29, #1f1c2c);
+        color: #fff;
+      }
+      .neon-text {
+        color: #00bfff;
+        text-shadow: 0 0 5px #00bfff, 0 0 10px #00bfff, 0 0 20px #00bfff, 0 0 30px #00bfff;
+      }
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      .listening {
+        animation: listening 1s infinite;
+      }
+      @keyframes listening {
+        0% {
+          text-shadow: 0 0 5px #00bfff, 0 0 10px #00bfff, 0 0 20px #00bfff, 0 0 30px #00bfff;
+        }
+        50% {
+          text-shadow: 0 0 5px #00bfff, 0 0 10px #00bfff, 0 0 20px #00bfff, 0 0 30px #00bfff;
+        }
+        100% {
+          text-shadow: 0 0 5px #00bfff, 0 0 10px #00bfff, 0 0 20px #00bfff, 0 0 30px #00bfff;
+        }
+      }
+      .wave {
+        position: relative;
+        width: 100%;
+        height: 100px;
+        background: linear-gradient(135deg, #0a0f29, #1f1c2c);
+        overflow: hidden;
+      }
+      .wave::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, #00bfff 10%, transparent 10.01%);
+        background-size: 50px 50px;
+        animation: wave 5s linear infinite;
+      }
+      @keyframes wave {
+        0% {
+          transform: translate(-50%, -50%) rotate(0deg);
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Voice Activated Banking System</h1>
+    <div class="container mx-auto p-4">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold neon-text">Voice Activated Banking System</h1>
         </header>
         <main>
-            <section class="voice-command">
-                <!-- <button id="voice-btn"><i class="fas fa-microphone"></i> Speak</button> -->
-                <div id="status">Listening for activation phrase...</div>
-                <p id="output"></p>
+            <section class="voice-command text-center mb-8">
+                <div id="status" class="text-lg mb-4 listening">Listening for activation phrase...</div>
+                <div class="wave"></div>
+                <p id="output" class="text-xl font-semibold mt-4"></p>
             </section>
-            <section class="features">
-                <div class="feature">
-                    <i class="fas fa-wallet"></i>
-                    <h2>Check Balance</h2>
+            <section class="features grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="feature bg-gray-900 p-6 rounded-lg shadow-md text-center">
+                    <i class="fas fa-wallet text-4xl mb-4 text-blue-400"></i>
+                    <h2 class="text-2xl font-bold mb-2">Check Balance</h2>
                     <p>Quickly check your account balance with a simple voice command.</p>
                 </div>
-                <div class="feature">
-                    <i class="fas fa-exchange-alt"></i>
-                    <h2>Transfer Money</h2>
+                <div class="feature bg-gray-900 p-6 rounded-lg shadow-md text-center">
+                    <i class="fas fa-exchange-alt text-4xl mb-4 text-blue-400"></i>
+                    <h2 class="text-2xl font-bold mb-2">Transfer Money</h2>
                     <p>Transfer money to any account effortlessly using your voice.</p>
                 </div>
-                <div class="feature">
-                    <i class="fas fa-history"></i>
-                    <h2>Transaction History</h2>
+                <div class="feature bg-gray-900 p-6 rounded-lg shadow-md text-center">
+                    <i class="fas fa-history text-4xl mb-4 text-blue-400"></i>
+                    <h2 class="text-2xl font-bold mb-2">Transaction History</h2>
                     <p>View your recent transactions with a single voice command.</p>
                 </div>
             </section>
         </main>
-        <footer>
+        <footer class="text-center mt-8">
             <p>&copy; 2023 Voice Activated Banking. All rights reserved.</p>
         </footer>
     </div>
