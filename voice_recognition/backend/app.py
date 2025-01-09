@@ -326,74 +326,74 @@ def process_command():
 
         # Verify voice
         score, _ = voice_model.verify_files(input_audio_path, temp_audio_path)
-        print(score)
-        if score > 0.50:
+        print("this is output here : ",score)
+        if score <= 0.50:
             return jsonify({"error": "Voice authentication failed"}), 401
-
-        command = request.form.get("command")
-        intent = predict_intent(command)
-
-        if intent == "CheckBalance":
-            return jsonify({"balance": user.balance})
-
-        elif intent == "TransferMoney":
-            name_and_amount = extract_name_and_amount(command)
-            if not name_and_amount:
-                return jsonify({"error": "Could not parse recipient or amount"}), 400
-            name = name_and_amount.get("name")
-            print(name)
-            amount = float(name_and_amount.get("amount"))
-            to_account = User.query.filter_by(user_id=name.lower()).first()
-            if not to_account:
-                return jsonify({"error": "Recipient account not found"}), 404
-            if user.balance < amount:
-                return jsonify({"error": "Insufficient balance"}), 400
-            user.balance -= amount
-            to_account.balance += amount
-
-            db.session.add(
-                TransactionHistory(
-                    acc_email=email,
-                    sent_to_email=name,
-                    transaction_type="Debit",
-                    amount=amount,
-                )
-            )
-            db.session.add(
-                TransactionHistory(
-                    acc_email=name,
-                    sent_to_email=email,
-                    transaction_type="Credit",
-                    amount=amount,
-                )
-            )
-            db.session.commit()
-            return jsonify({"message": f"Transferred ${amount} to {name}'s account."})
-
-        elif intent == "GetLastTransactions":
-            transactions = (
-                TransactionHistory.query.filter_by(acc_email=email)
-                .order_by(TransactionHistory.timestamp.desc())
-                .limit(5)
-                .all()
-            )
-            if not transactions:
-                return jsonify({"error": "No transaction history found"}), 404
-
-            history = []
-            for t in transactions:
-                history.append(
-                    {
-                        "transaction_id": t.transaction_id,
-                        "transaction_type": t.transaction_type,
-                        "amount": t.amount,
-                        "timestamp": t.timestamp,
-                    }
-                )
-            return jsonify({"transactions": history})
-
         else:
-            return jsonify({"message": "I'm sorry, I didn't understand that."})
+            command = request.form.get("command")
+            intent = predict_intent(command)
+
+            if intent == "CheckBalance":
+                return jsonify({"balance": user.balance})
+
+            elif intent == "TransferMoney":
+                name_and_amount = extract_name_and_amount(command)
+                if not name_and_amount:
+                    return jsonify({"error": "Could not parse recipient or amount"}), 400
+                name = name_and_amount.get("name")
+                print(name)
+                amount = float(name_and_amount.get("amount"))
+                to_account = User.query.filter_by(user_id=name.lower()).first()
+                if not to_account:
+                    return jsonify({"error": "Recipient account not found"}), 404
+                if user.balance < amount:
+                    return jsonify({"error": "Insufficient balance"}), 400
+                user.balance -= amount
+                to_account.balance += amount
+
+                db.session.add(
+                    TransactionHistory(
+                        acc_email=email,
+                        sent_to_email=name,
+                        transaction_type="Debit",
+                        amount=amount,
+                    )
+                )
+                db.session.add(
+                    TransactionHistory(
+                        acc_email=name,
+                        sent_to_email=email,
+                        transaction_type="Credit",
+                        amount=amount,
+                    )
+                )
+                db.session.commit()
+                return jsonify({"message": f"Transferred ${amount} to {name}'s account."})
+
+            elif intent == "GetLastTransactions":
+                transactions = (
+                    TransactionHistory.query.filter_by(acc_email=email)
+                    .order_by(TransactionHistory.timestamp.desc())
+                    .limit(5)
+                    .all()
+                )
+                if not transactions:
+                    return jsonify({"error": "No transaction history found"}), 404
+
+                history = []
+                for t in transactions:
+                    history.append(
+                        {
+                            "transaction_id": t.transaction_id,
+                            "transaction_type": t.transaction_type,
+                            "amount": t.amount,
+                            "timestamp": t.timestamp,
+                        }
+                    )
+                return jsonify({"transactions": history})
+
+            else:
+                return jsonify({"message": "I'm sorry, I didn't understand that."})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

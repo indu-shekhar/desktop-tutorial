@@ -10,7 +10,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.continuous = true;
     recognition.interimResults = false;
-    recognition.lang = "en-US";
+    // recognition.lang = "en-US";
+
+    recognition.onstart = () => {
+        recognitionActive = true;
+        console.log("Speech recognition started.");
+    };
+
+    recognition.onend = () => {
+        recognitionActive = false;
+        console.log("Speech recognition ended.");
+    };
+
+    recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        recognitionActive = false;
+    };
 
     // Updated speak function
     function speak(text, callback) {
@@ -29,26 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Greet the user on load
     const welcomeMessage = "Welcome to Voice Activated Banking. Say hi bank to begin.";
-    speak(welcomeMessage, () => {
-        // Start recognition only after the welcome message is spoken
-        recognition.start();
-    });
+    speak(welcomeMessage);
     output.textContent = welcomeMessage;
-
-    recognition.onstart = () => {
-        recognitionActive = true;
-        console.log("Speech recognition started.");
-    };
-
-    recognition.onend = () => {
-        recognitionActive = false;
-        console.log("Speech recognition ended.");
-    };
-
-    recognition.onerror = (event) => {
-        console.error("Speech recognition error:", event.error);
-        recognitionActive = false;
-    };
 
     // Handle recognized speech
     recognition.onresult = (event) => {
@@ -64,6 +61,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } else {
             // Already activated; process command
+            recognition.stop();
+            recognitionActive = false;
+            speak("Recording voice sample. Please speak clearly.");
             startRecording(command);
         }
     };
