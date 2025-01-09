@@ -1,73 +1,116 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const welcomeMessage = "Welcome to Voice Activated Banking. Press the button or press the spacebar on your keyboard to start speaking and give commands.";
-    speak(welcomeMessage);
-    output.textContent = welcomeMessage;
-});
+    const output = document.getElementById("output");
 
-const voiceBtn = document.getElementById("voice-btn");
-const output = document.getElementById("output");
+    let isActivated = false;
+    let recognitionActive = false;
 
-voiceBtn.addEventListener("click", startRecognition);
-document.addEventListener("keydown", (event) => {
-    if (event.code === "Space") {
-        startRecognition();
-    }
-});
-
-function startRecognition() {
+    // Create a single SpeechRecognition instance
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.start();
-    output.textContent = "Listening...";
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
 
-    recognition.onresult = (event) => {
-        const command = event.results[0][0].transcript;
-        output.textContent = `You said: ${command}`;
-        sendVoiceCommand(command);
+    // Updated speak function
+    function speak(text, callback) {
+        if (recognitionActive) {
+            recognition.stop();
+        }
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.onend = () => {
+            if (callback) callback();
+            if (!recognitionActive) {
+                recognition.start();
+            }
+        };
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // Greet the user on load
+    const welcomeMessage = "Welcome to Voice Activated Banking. Say hi bank to begin.";
+    speak(welcomeMessage, () => {
+        // Start recognition only after the welcome message is spoken
+        recognition.start();
+    });
+    output.textContent = welcomeMessage;
+
+    recognition.onstart = () => {
+        recognitionActive = true;
+        console.log("Speech recognition started.");
+    };
+
+    recognition.onend = () => {
+        recognitionActive = false;
+        console.log("Speech recognition ended.");
     };
 
     recognition.onerror = (event) => {
-        output.textContent = `Error occurred in recognition: ${event.error}`;
+        console.error("Speech recognition error:", event.error);
+        recognitionActive = false;
     };
-}
 
-async function sendVoiceCommand(command) {
-    const token = document.cookie.split('; ').find(row => row.startsWith('access_token=')).split('=')[1];
-    try {
-        const response = await fetch('/process_command', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ command })
-        });
-        const data = await response.json();
+    // Handle recognized speech
+    recognition.onresult = (event) => {
+        const command = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+        console.log("Heard:", command);
+        output.textContent = `You said: ${command}`;
 
-        if (data.error) {
-            output.textContent = `Error: ${data.error}`;
-            speak(`Error: ${data.error}`);
-        } else if (data.balance !== undefined) {
-            output.textContent = `Your balance is $${data.balance.toFixed(2)}`;
-            speak(`Your balance is $${data.balance.toFixed(2)}`);
-        } else if (data.transactions) {
-            let transactionHistory = "Your last five transactions are:\n";
-            data.transactions.forEach((transaction, index) => {
-                transactionHistory += `${index + 1}. ${transaction.transaction_type} of $${transaction.amount.toFixed(2)} on ${new Date(transaction.timestamp).toLocaleString()}\n`;
-            });
-            output.textContent = transactionHistory;
-            speak(transactionHistory);
+        if (!isActivated) {
+            // Listen for "hi bank" to activate
+            if (command.includes("hello, bank")) {
+                isActivated = true;
+                speak("Voice command mode activated. Please state your command now.");
+            }
         } else {
-            output.textContent = data.message;
-            speak(data.message);
+            // Already activated; process command
+            sendVoiceCommand(command);
         }
-    } catch (error) {
-        output.textContent = "Error communicating with the server.";
-        speak("Error communicating with the server.");
-    }
-}
+    };
 
-function speak(text) {
-    const synth = window.speechSynthesis;
-    const utterance = new SpeechSynthesisUtterance(text);
-    synth.speak(utterance);
-}
+    // Existing functionality: identical data submission to backend
+    async function sendVoiceCommand(command) {
+        const tokenCookie = document.cookie.split("; ").find(row => row.startsWith("access_token="));
+        let token = "";
+        if (tokenCookie) token = tokenCookie.split("=")[1];
+
+        try {
+            const response = await fetch("/process_command", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ command })
+            });
+            const data = await response.json();
+
+            if (data.error) {
+                output.textContent = `Error: ${data.error}`;
+                speak(`Error: ${data.error}`, resetActivation);
+            } else if (data.balance !== undefined) {
+                const balanceMsg = `Your balance is $${data.balance.toFixed(2)}`;
+                output.textContent = balanceMsg;
+                speak(balanceMsg, resetActivation);
+            } else if (data.transactions) {
+                let transactionHistory = "Your last five transactions are:\n";
+                data.transactions.forEach((transaction, index) => {
+                    transactionHistory +=
+                      `${index + 1}. ${transaction.transaction_type} of $${transaction.amount.toFixed(2)} on ` +
+                      `${new Date(transaction.timestamp).toLocaleString()}\n`;
+                });
+                output.textContent = transactionHistory;
+                speak(transactionHistory, resetActivation);
+            } else {
+                output.textContent = data.message;
+                speak(data.message, resetActivation);
+            }
+        } catch (error) {
+            output.textContent = "Error communicating with the server.";
+            speak("Error communicating with the server.", resetActivation);
+        }
+    }
+
+    function resetActivation() {
+        isActivated = false;
+        speak("Command complete. Say activation phrase to issue another command.");
+    }
+});
