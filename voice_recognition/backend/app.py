@@ -186,7 +186,7 @@ def register():
 def login():
     if "audio-file" not in request.files or "face-image" not in request.files:
         return jsonify({"error": "File(s) missing"}), 400
-    
+
     audio_file = request.files["audio-file"]
     face_image = request.files["face-image"]
     email = request.form.get("email")
@@ -194,6 +194,7 @@ def login():
     if not audio_file.filename or not face_image.filename:
         return jsonify({"error": "No file selected"}), 400
 
+    print(email)
     user = User.query.filter_by(email=email).first()
     if not user:
         return jsonify({"error": "User not found"}), 404
@@ -230,7 +231,9 @@ def login():
             return jsonify({"error": "No face detected"}), 400
 
         face_encoding = face_encodings[0]
-        match = face_recognition.compare_faces([np.array(user.face_encoding)], face_encoding)[0]
+        match = face_recognition.compare_faces(
+            [np.array(user.face_encoding)], face_encoding
+        )[0]
         if not match:
             return jsonify({"error": "Face authentication failed"}), 401
 

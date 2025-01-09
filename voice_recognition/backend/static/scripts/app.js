@@ -64,7 +64,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function sanitizeEmail(input) {
     // Allow letters, digits, underscores, dots, and @
     // Remove everything else
-    return input.replace(/[^a-zA-Z0-9_.@]/g, "");
+    let sanitized = input.replace(/[^a-zA-Z0-9_.@]/g, "");
+    // Remove trailing dot if present
+    if (sanitized.endsWith(".")) {
+      sanitized = sanitized.slice(0, -1);
+    }
+    return sanitized;
   }
 
   hotwordRecognition.onresult = (e) => {
