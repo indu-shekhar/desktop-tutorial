@@ -61,8 +61,14 @@ document.addEventListener("DOMContentLoaded", () => {
   hotwordRecognition.start();
   speak("Waiting for hello indu.");
 
+  function sanitizeEmail(input) {
+    // Allow letters, digits, underscores, dots, and @
+    // Remove everything else
+    return input.replace(/[^a-zA-Z0-9_.@]/g, "");
+  }
+
   hotwordRecognition.onresult = (e) => {
-    const text = e.results[e.results.length - 1][0].transcript.toLowerCase().trim();
+    let text = e.results[e.results.length - 1][0].transcript.toLowerCase().trim();
 
     // 0) Listen for activation phrase
     if (text.includes("hello indu") && conversationStep === 0) {
@@ -74,12 +80,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 1) Get email from user
     if (conversationStep === 1) {
-      emailInput.value = text;
-      statusEl.textContent = `Email captured: ${text}`;
-      console.log("Email captured:", text);
+      // Sanitize the captured text
+      const sanitizedEmail = sanitizeEmail(text);
+      emailInput.value = sanitizedEmail;
+      statusEl.textContent = `Email captured: ${sanitizedEmail}`;
+      console.log("Email captured:", sanitizedEmail);
+
       // Ask user to confirm email
       conversationStep = 2;
-      speak(`Your email is: ${text}. Do you confirm? Say confirm or cancel.`);
+      speak(`Your email is: ${sanitizedEmail}. Do you confirm? Say confirm or cancel.`);
       return;
     }
 
@@ -88,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
       conversationStep = 3;
       speak("Say record to start voice recording. We will capture five seconds automatically.");
       return;
-    } else if (conversationStep === 2 && text.includes("cancel")) {
+    } else if (conversationStep === 2 && (text.includes("cancel")|| text.includes("no"))) {
       conversationStep = 1;
       speak("Okay, please say your email again.");
       return;
