@@ -300,36 +300,55 @@ def process_command():
     email = decoded_token.get("sub")
     if not email:
         return jsonify({"error": "Invalid token: email not found"}), 401
-    bank_data = request.json
-    command = bank_data.get("command")
-    intent = predict_intent(command)
 
-    if intent == "CheckBalance":
-        account = User.query.filter_by(email=email).first()
-        if account:
-            return jsonify({"balance": account.balance})
-        else:
-            return jsonify({"error": "Account not found"}), 404
+    if "voice_sample" not in request.files:
+        return jsonify({"error": "Voice sample missing"}), 400
 
-    elif intent == "TransferMoney":
-        # Example transfer command handling
-        name_and_amount = extract_name_and_amount(command)
-        if name_and_amount:
+    voice_sample = request.files["voice_sample"]
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    try:
+        # Load enrolled voice
+        enrolled_audio = io.BytesIO(user.audio_file)
+        enrolled_audio.seek(0)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as enrolled_tmp:
+            enrolled_tmp.write(enrolled_audio.read())
+            temp_audio_path = enrolled_tmp.name
+
+        # Process new voice sample
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as input_tmp:
+            sound = AudioSegment.from_file(voice_sample)
+            sound.export(input_tmp.name, format="wav")
+            input_audio_path = input_tmp.name
+
+        # Verify voice
+        score, _ = voice_model.verify_files(input_audio_path, temp_audio_path)
+        print(score)
+        if score > 0.50:
+            return jsonify({"error": "Voice authentication failed"}), 401
+
+        command = request.form.get("command")
+        intent = predict_intent(command)
+
+        if intent == "CheckBalance":
+            return jsonify({"balance": user.balance})
+
+        elif intent == "TransferMoney":
+            name_and_amount = extract_name_and_amount(command)
+            if not name_and_amount:
+                return jsonify({"error": "Could not parse recipient or amount"}), 400
             name = name_and_amount.get("name")
             print(name)
             amount = float(name_and_amount.get("amount"))
-            print(amount)
-            # Transfer the amount to the specified account
-            from_account = User.query.filter_by(email=email).first()
             to_account = User.query.filter_by(user_id=name.lower()).first()
-            if not from_account:
-                return jsonify({"error": "Invalid account number"}), 404
             if not to_account:
                 return jsonify({"error": "Recipient account not found"}), 404
-            if from_account.balance < amount:
+            if user.balance < amount:
                 return jsonify({"error": "Insufficient balance"}), 400
-
-            from_account.balance -= amount
+            user.balance -= amount
             to_account.balance += amount
 
             db.session.add(
@@ -349,32 +368,38 @@ def process_command():
                 )
             )
             db.session.commit()
-
             return jsonify({"message": f"Transferred ${amount} to {name}'s account."})
 
-    elif intent == "GetLastTransactions":
-        transactions = (
-            TransactionHistory.query.filter_by(acc_email=email)
-            .order_by(TransactionHistory.timestamp.desc())
-            .limit(5)
-            .all()
-        )
-        if transactions:
-            history = [
-                {
-                    "transaction_id": t.transaction_id,
-                    "transaction_type": t.transaction_type,
-                    "amount": t.amount,
-                    "timestamp": t.timestamp,
-                }
-                for t in transactions
-            ]
+        elif intent == "GetLastTransactions":
+            transactions = (
+                TransactionHistory.query.filter_by(acc_email=email)
+                .order_by(TransactionHistory.timestamp.desc())
+                .limit(5)
+                .all()
+            )
+            if not transactions:
+                return jsonify({"error": "No transaction history found"}), 404
+
+            history = []
+            for t in transactions:
+                history.append(
+                    {
+                        "transaction_id": t.transaction_id,
+                        "transaction_type": t.transaction_type,
+                        "amount": t.amount,
+                        "timestamp": t.timestamp,
+                    }
+                )
             return jsonify({"transactions": history})
+
         else:
-            return jsonify({"error": "No transaction history found"}), 404
-    else:
-        response = "I'm sorry, I didn't understand that."
-        return jsonify({"message": response})
+            return jsonify({"message": "I'm sorry, I didn't understand that."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        for path_var in ["temp_audio_path", "input_audio_path"]:
+            if path_var in locals() and os.path.exists(locals()[path_var]):
+                os.remove(locals()[path_var])
 
 
 # Run the Flask application

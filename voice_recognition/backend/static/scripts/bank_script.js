@@ -3,6 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let isActivated = false;
     let recognitionActive = false;
+    let mediaRecorder;
+    let chunks = [];
 
     // Create a single SpeechRecognition instance
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -62,24 +64,49 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } else {
             // Already activated; process command
-            sendVoiceCommand(command);
+            startRecording(command);
         }
     };
 
+    // Start recording voice sample
+    function startRecording(command) {
+        navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+            mediaRecorder = new MediaRecorder(stream);
+            chunks = [];
+            mediaRecorder.ondataavailable = (event) => chunks.push(event.data);
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(chunks, { type: "audio/wav" });
+                const file = new File([blob], "voice_sample.wav", { type: blob.type });
+                sendVoiceCommand(command, file);
+            };
+
+            mediaRecorder.start();
+            // Automatically stop after 3 minutes
+            setTimeout(() => {
+                if (mediaRecorder.state === "recording") {
+                    mediaRecorder.stop();
+                }
+            }, 5000); // 3 minutes in milliseconds
+        });
+    }
+
     // Existing functionality: identical data submission to backend
-    async function sendVoiceCommand(command) {
+    async function sendVoiceCommand(command, voiceSample) {
         const tokenCookie = document.cookie.split("; ").find(row => row.startsWith("access_token="));
         let token = "";
         if (tokenCookie) token = tokenCookie.split("=")[1];
+
+        const formData = new FormData();
+        formData.append("command", command);
+        formData.append("voice_sample", voiceSample);
 
         try {
             const response = await fetch("/process_command", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({ command })
+                body: formData
             });
             const data = await response.json();
 
