@@ -1,161 +1,82 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Voice Authentication - Login</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='styles/style.css') }}"
-    />
-    <style>
-      /* Enlarge and style the title */
-      h1 {
-        font-size: 36px;
-        color: #333;
-        text-align: center;
-        margin-bottom: 20px;
-      }
-
-      /* Additional styles for the header */
-    </style>
-  </head>
-  <body>
-    <header id="header">
-      <h1>Voice Authentication - Login</h1>
-    </header>
-    <div id="content-box">
-      <main>
-        <section class="instructions">
-          <p id="instructions">
-            Press 'A' to start/stop voice recording, 'C' to start/capture face
-            image, and 'Enter' to submit the form.
-          </p>
-        </section>
-        <section class="voice-command">
-          <button id="record-btn">Start Recording</button>
-          <button id="stop-btn" disabled>Stop Recording</button>
-          <audio id="player" controls></audio>
-        </section>
-        <section class="face-capture">
-          <button id="capture-btn">Start Camera</button>
-          <video id="camera" autoplay></video>
-          <canvas id="snapshot"></canvas>
-          <img id="face-preview" alt="Face Preview" />
-        </section>
-        <form
-          id="upload-form"
-          action="/login"
-          method="POST"
-          enctype="multipart/form-data"
-        >
-          <input
-            type="email"
-            id="email"
-            name="email"
-            placeholder="Enter your email"
-            required
-          />
-          <input
-            type="file"
-            id="audio-file"
-            name="audio-file"
-            accept="audio/*"
-            hidden
-          />
-          <input
-            type="file"
-            id="face-image"
-            name="face-image"
-            accept="image/*"
-            hidden
-          />
-          <input type="submit" value="Submit" />
-        </form>
-        <div class="registration">
-          <p>Don't have an account? <a href="/register">Register</a></p>
-        </div>
-        <p id="result"></p>
-      </main>
-      <footer>
-        <p>&copy; 2023 Voice Authentication. All rights reserved.</p>
-      </footer>
-    </div>
-    <script src="{{ url_for('static', filename='scripts/app.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/wavefile@12.0.0/dist/wavefile.min.js"></script>
-    <script>
-      const colors = [
-        [62, 35, 255],
-        [60, 255, 60],
-        [255, 35, 98],
-        [45, 175, 230],
-        [255, 0, 255],
-        [255, 128, 0],
-      ];
-
-      let step = 0;
-      const gradientSpeed = 0.002;
-      const colorIndices = [0, 1, 2, 3];
-
-      function updateGradient() {
-        const c0_0 = colors[colorIndices[0]];
-        const c0_1 = colors[colorIndices[1]];
-        const c1_0 = colors[colorIndices[2]];
-        const c1_1 = colors[colorIndices[3]];
-
-        const istep = 1 - step;
-        const r1 = Math.round(istep * c0_0[0] + step * c0_1[0]);
-        const g1 = Math.round(istep * c0_0[1] + step * c0_1[1]);
-        const b1 = Math.round(istep * c0_0[2] + step * c0_1[2]);
-        const color1 = `rgb(${r1},${g1},${b1})`;
-
-        const r2 = Math.round(istep * c1_0[0] + step * c1_1[0]);
-        const g2 = Math.round(istep * c1_0[1] + step * c1_1[1]);
-        const b2 = Math.round(istep * c1_0[2] + step * c1_1[2]);
-        const color2 = `rgb(${r2},${g2},${b2})`;
-
-        document.body.style.background = `linear-gradient(to right, ${color1}, ${color2})`;
-
-        step += gradientSpeed;
-        if (step >= 1) {
-          step %= 1;
-          colorIndices[0] = colorIndices[1];
-          colorIndices[2] = colorIndices[3];
-
-          colorIndices[1] =
-            (colorIndices[1] +
-              Math.floor(1 + Math.random() * (colors.length - 1))) %
-            colors.length;
-          colorIndices[3] =
-            (colorIndices[3] +
-              Math.floor(1 + Math.random() * (colors.length - 1))) %
-            colors.length;
-        }
-      }
-
-      setInterval(updateGradient, 10);
-    </script>
-  </body>
-</html> -->
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Voice-Based Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></link>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+    .pulse-ring {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border: 4px solid rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes neon-glow {
+      0%, 100% { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #ff00ff, 0 0 30px #ff00ff, 0 0 40px #ff00ff, 0 0 50px #ff00ff, 0 0 60px #ff00ff, 0 0 70px #ff00ff; }
+      50% { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #ff00ff, 0 0 30px #ff00ff, 0 0 40px #ff00ff, 0 0 50px #ff00ff, 0 0 60px #ff00ff, 0 0 70px #ff00ff; }
+    }
+    .neon-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 3rem;
+      color: #fff;
+      animation: neon-glow 1.5s infinite alternate;
+    }
+  </style>
 </head>
-<body>
-  <h1>Voice-Based Login</h1>
-  <p id="status">Waiting for "hello indu"...</p>
-  <form id="upload-form" enctype="multipart/form-data">
-    <input type="email" id="email" name="email" hidden />
-    <input type="file" id="audio-file" name="audio-file" accept="audio/*" hidden />
-    <input type="file" id="face-image" name="face-image" accept="image/*" hidden />
-  </form>
-  <audio id="player" hidden></audio>
-  <video id="camera" autoplay hidden></video>
-  <canvas id="snapshot" hidden></canvas>
-  <img id="face-preview" alt="face preview" hidden />
-  <p id="result"></p>
+<body class="bg-gradient-to-r from-blue-900 to-purple-900 text-white font-roboto min-h-screen flex flex-col items-center justify-center">
+  <div class="container mx-auto p-4 text-center">
+    <h1 class="neon-text fixed top-2 left-1/2 transform -translate-x-1/2">Voice-Based Login</h1>
+    <div class="relative inline-block mb-10 flex items-center justify-center mt-20">
+      <div class="pulse-ring"></div>
+      <div class="pulse-ring" style="animation-delay: 0.5s;"></div>
+      <div class="pulse-ring" style="animation-delay: 1s;"></div>
+      <i class="fas fa-microphone text-6xl absolute"></i>
+    </div>
+    <p id="status" class="text-xl mb-6">Waiting for "hello indu"...</p>
+    <form id="upload-form" enctype="multipart/form-data" class="hidden">
+      <input type="email" id="email" name="email" hidden />
+      <input type="file" id="audio-file" name="audio-file" accept="audio/*" hidden />
+      <input type="file" id="face-image" name="face-image" accept="image/*" hidden />
+    </form>
+    <audio id="player" hidden></audio>
+    <video id="camera" autoplay hidden class="mx-auto"></video>
+    <canvas id="snapshot" hidden></canvas>
+    <img id="face-preview" alt="face preview" hidden class="mx-auto mt-6 rounded-lg shadow-lg" />
+    <p id="result" class="text-center text-red-500 mt-6"></p>
+    <div class="mt-10 flex flex-wrap justify-center gap-4">
+      <div class="bg-white bg-opacity-10 p-4 rounded-lg shadow-lg w-64">
+        <h2 class="text-xl font-bold mb-2">Step 1: Say "hello indu"</h2>
+        <p>Start the process by saying the activation phrase "hello indu".</p>
+      </div>
+      <div class="bg-white bg-opacity-10 p-4 rounded-lg shadow-lg w-64">
+        <h2 class="text-xl font-bold mb-2">Step 2: Provide Your Email</h2>
+        <p>After activation, say your email address clearly.</p>
+      </div>
+      <div class="bg-white bg-opacity-10 p-4 rounded-lg shadow-lg w-64">
+        <h2 class="text-xl font-bold mb-2">Step 3: Confirm Your Email</h2>
+        <p>Confirm your email by saying "confirm" or re-enter by saying "cancel".</p>
+      </div>
+      <div class="bg-white bg-opacity-10 p-4 rounded-lg shadow-lg w-64">
+        <h2 class="text-xl font-bold mb-2">Step 4: Record Your Voice</h2>
+        <p>Say "record" to start a 5-second voice recording.</p>
+      </div>
+      <div class="bg-white bg-opacity-10 p-4 rounded-lg shadow-lg w-64">
+        <h2 class="text-xl font-bold mb-2">Step 5: Capture Your Face</h2>
+        <p>Say "capture face" to start the camera and "snapshot" to take a photo.</p>
+      </div>
+      <div class="bg-white bg-opacity-10 p-4 rounded-lg shadow-lg w-64">
+        <h2 class="text-xl font-bold mb-2">Step 6: Submit</h2>
+        <p>Finally, say "confirm" to submit the form or "cancel" to start over.</p>
+      </div>
+    </div>
+  </div>
   <script src="{{ url_for('static', filename='scripts/app.js') }}"></script>
 </body>
 </html>

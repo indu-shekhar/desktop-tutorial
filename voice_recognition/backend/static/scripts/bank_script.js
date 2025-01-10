@@ -42,6 +42,11 @@ document.addEventListener("DOMContentLoaded", () => {
         window.speechSynthesis.speak(utterance);
     }
 
+    function speak_voice_record(text){
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+    }
+
     // Greet the user on load
     const welcomeMessage = "Welcome to Voice Activated Banking. Say hi bank to begin.";
     speak(welcomeMessage);
@@ -63,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Already activated; process command
             recognition.stop();
             recognitionActive = false;
-            speak("Recording voice sample. Please speak clearly.");
+            speak_voice_record("Recording voice sample. Please speak clearly.");
             startRecording(command);
         }
     };
@@ -86,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (mediaRecorder.state === "recording") {
                     mediaRecorder.stop();
                 }
-            }, 5000); // 3 minutes in milliseconds
+            }, 10000); // 3 minutes in milliseconds
         });
     }
 
