@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Voice Activated Banking</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+      @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap");
       body {
-        font-family: 'Orbitron', sans-serif;
+        font-family: "Orbitron", sans-serif;
         background: linear-gradient(135deg, #0a0f29, #1f1c2c);
         color: #fff;
       }
       .neon-text {
         color: #00bfff;
-        text-shadow: 0 0 5px #00bfff, 0 0 10px #00bfff, 0 0 20px #00bfff, 0 0 30px #00bfff;
+        text-shadow: 0 0 5px #00bfff, 0 0 10px #00bfff, 0 0 20px #00bfff,
+          0 0 30px #00bfff;
       }
       .pulse {
         animation: pulse 2s infinite;
@@ -36,13 +40,16 @@
       }
       @keyframes listening {
         0% {
-          text-shadow: 0 0 5px #00bfff, 0 0 10px #00bfff, 0 0 20px #00bfff, 0 0 30px #00bfff;
+          text-shadow: 0 0 5px #00bfff, 0 0 10px #00bfff, 0 0 20px #00bfff,
+            0 0 30px #00bfff;
         }
         50% {
-          text-shadow: 0 0 5px #00bfff, 0 0 10px #00bfff, 0 0 20px #00bfff, 0 0 30px #00bfff;
+          text-shadow: 0 0 5px #00bfff, 0 0 10px #00bfff, 0 0 20px #00bfff,
+            0 0 30px #00bfff;
         }
         100% {
-          text-shadow: 0 0 5px #00bfff, 0 0 10px #00bfff, 0 0 20px #00bfff, 0 0 30px #00bfff;
+          text-shadow: 0 0 5px #00bfff, 0 0 10px #00bfff, 0 0 20px #00bfff,
+            0 0 30px #00bfff;
         }
       }
       .wave {
@@ -53,7 +60,7 @@
         overflow: hidden;
       }
       .wave::before {
-        content: '';
+        content: "";
         position: absolute;
         top: 50%;
         left: 50%;
@@ -71,41 +78,112 @@
           transform: translate(-50%, -50%) rotate(360deg);
         }
       }
+      /* Add to existing styles */
+      .animate-fade-in {
+        animation: fadeIn 0.5s ease-in;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Table hover effect */
+      tr:hover td {
+        background-color: rgba(30, 58, 138, 0.2); /* bg-blue-900/20 equivalent */
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container mx-auto p-4">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold neon-text">Voice Activated Banking System</h1>
-        </header>
-        <main>
-            <section class="voice-command text-center mb-8">
-                <div id="status" class="text-lg mb-4 listening">Listening for activation phrase...</div>
-                <div class="wave"></div>
-                <p id="output" class="text-xl font-semibold mt-4"></p>
-            </section>
-            <section class="features grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="feature bg-gray-900 p-6 rounded-lg shadow-md text-center">
-                    <i class="fas fa-wallet text-4xl mb-4 text-blue-400"></i>
-                    <h2 class="text-2xl font-bold mb-2">Check Balance</h2>
-                    <p>Quickly check your account balance with a simple voice command.</p>
-                </div>
-                <div class="feature bg-gray-900 p-6 rounded-lg shadow-md text-center">
-                    <i class="fas fa-exchange-alt text-4xl mb-4 text-blue-400"></i>
-                    <h2 class="text-2xl font-bold mb-2">Transfer Money</h2>
-                    <p>Transfer money to any account effortlessly using your voice.</p>
-                </div>
-                <div class="feature bg-gray-900 p-6 rounded-lg shadow-md text-center">
-                    <i class="fas fa-history text-4xl mb-4 text-blue-400"></i>
-                    <h2 class="text-2xl font-bold mb-2">Transaction History</h2>
-                    <p>View your recent transactions with a single voice command.</p>
-                </div>
-            </section>
-        </main>
-        <footer class="text-center mt-8">
-            <p>&copy; 2023 Voice Activated Banking. All rights reserved.</p>
-        </footer>
+      <header class="text-center mb-8">
+        <h1 class="text-4xl font-bold neon-text">
+          Voice Activated Banking System
+        </h1>
+      </header>
+      <main>
+        <section class="voice-command text-center mb-8">
+          <div id="status" class="text-lg mb-4 listening">
+            Listening for activation phrase...
+          </div>
+          <div class="wave"></div>
+          <p id="output" class="text-xl font-semibold mt-4"></p>
+          <!-- Add this after the wave div -->
+          <div
+            id="transactionTable"
+            class="hidden mt-8 w-full max-w-4xl mx-auto"
+          >
+            <div
+              class="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-blue-400/30"
+            >
+              <h2 class="text-2xl font-bold mb-4 text-blue-400">
+                Recent Transactions
+              </h2>
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-blue-400/30">
+                  <thead>
+                    <tr>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-blue-400 uppercase tracking-wider"
+                      >
+                        Date
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-blue-400 uppercase tracking-wider"
+                      >
+                        Type
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-blue-400 uppercase tracking-wider"
+                      >
+                        Amount
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-blue-400 uppercase tracking-wider"
+                      >
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="transactionBody"
+                    class="divide-y divide-blue-400/30"
+                  ></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="features grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="feature bg-gray-900 p-6 rounded-lg shadow-md text-center">
+            <i class="fas fa-wallet text-4xl mb-4 text-blue-400"></i>
+            <h2 class="text-2xl font-bold mb-2">Check Balance</h2>
+            <p>
+              Quickly check your account balance with a simple voice command.
+            </p>
+          </div>
+          <div class="feature bg-gray-900 p-6 rounded-lg shadow-md text-center">
+            <i class="fas fa-exchange-alt text-4xl mb-4 text-blue-400"></i>
+            <h2 class="text-2xl font-bold mb-2">Transfer Money</h2>
+            <p>Transfer money to any account effortlessly using your voice.</p>
+          </div>
+          <div class="feature bg-gray-900 p-6 rounded-lg shadow-md text-center">
+            <i class="fas fa-history text-4xl mb-4 text-blue-400"></i>
+            <h2 class="text-2xl font-bold mb-2">Transaction History</h2>
+            <p>View your recent transactions with a single voice command.</p>
+          </div>
+        </section>
+      </main>
+      <footer class="text-center mt-8">
+        <p>&copy; 2023 Voice Activated Banking. All rights reserved.</p>
+      </footer>
     </div>
     <script src="{{ url_for('static', filename='scripts/bank_script.js') }}"></script>
-</body>
+  </body>
 </html>
