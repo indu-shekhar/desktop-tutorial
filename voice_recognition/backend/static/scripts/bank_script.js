@@ -33,18 +33,23 @@ document.addEventListener("DOMContentLoaded", () => {
             recognition.stop();
         }
         const utterance = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(utterance);
         utterance.onend = () => {
             if (callback) callback();
             if (!recognitionActive) {
                 recognition.start();
             }
         };
-        window.speechSynthesis.speak(utterance);
     }
 
-    function speak_voice_record(text){
+    function speak_voice_record(text, callback){
             const utterance = new SpeechSynthesisUtterance(text);
             window.speechSynthesis.speak(utterance);
+            utterance.onend = () => {
+                setTimeout(() => {
+                    if (callback) callback();
+                }, 200);
+            };
     }
 
     // Greet the user on load
@@ -85,7 +90,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 sendVoiceCommand(command, file);
             };
 
-            mediaRecorder.start();
+            setTimeout(() => {
+                mediaRecorder.start();
+                console.log("Recording started.");
+            }, 1000); // Adjust delay as needed (e.g., 500ms)
+            // mediaRecorder.start();
             // Automatically stop after 3 minutes
             setTimeout(() => {
                 if (mediaRecorder.state === "recording") {
@@ -117,11 +126,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (data.error) {
                 output.textContent = `Error: ${data.error}`;
-                speak(`Error: ${data.error}`, resetActivation);
+                speak_voice_record(`Error: ${data.error}`, resetActivation);
             } else if (data.balance !== undefined) {
                 const balanceMsg = `Your balance is $${data.balance.toFixed(2)}`;
                 output.textContent = balanceMsg;
-                speak(balanceMsg, resetActivation);
+                speak_voice_record(balanceMsg, resetActivation);
             } else if (data.transactions) {
                 let transactionHistory = "Your last five transactions are:\n";
                 data.transactions.forEach((transaction, index) => {
@@ -130,14 +139,14 @@ document.addEventListener("DOMContentLoaded", () => {
                       `${new Date(transaction.timestamp).toLocaleString()}\n`;
                 });
                 output.textContent = transactionHistory;
-                speak(transactionHistory, resetActivation);
+                speak_voice_record(transactionHistory, resetActivation);
             } else {
                 output.textContent = data.message;
-                speak(data.message, resetActivation);
+                speak_voice_record(data.message, resetActivation);
             }
         } catch (error) {
             output.textContent = "Error communicating with the server.";
-            speak("Error communicating with the server.", resetActivation);
+            speak_voice_record("Error communicating with the server.", resetActivation);
         }
     }
 
