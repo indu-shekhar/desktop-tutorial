@@ -12,7 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
   recognition.continuous = true;
   recognition.interimResults = false;
   // recognition.lang = "en-US";
-
   recognition.onstart = () => {
     recognitionActive = true;
     console.log("Speech recognition started.");
@@ -88,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Greet the user on load
   const welcomeMessage =
-    "Welcome to Voice Activated Banking. Say hi bank to begin.";
+    "Welcome to Voice Activated Banking. Say hello bank to begin.";
   speak(welcomeMessage);
   output.textContent = welcomeMessage;
 
