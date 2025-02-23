@@ -57,9 +57,23 @@ document.addEventListener("DOMContentLoaded", () => {
     speakThen(text, null);
   }
 
-  // Start recognition once upon load
-  hotwordRecognition.start();
-  speak("Waiting for hello indu.");
+  // Fetch saved email from cookies (if present)
+  const savedEmailCookie = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("saved_email="));
+  const savedEmail = savedEmailCookie ? savedEmailCookie.split("=")[1] : null;
+
+  if (savedEmail) {
+    // If an email is already stored, skip straight to voice recording steps
+    emailInput.value = savedEmail;
+    statusEl.textContent = `Using saved email: ${savedEmail}`;
+    conversationStep = 3; 
+    speak("We have your email on file. Say record to start voice recording.");
+  } else {
+    // If no email is saved, do your normal prompt
+    hotwordRecognition.start();
+    speak("Waiting for hello indu.");
+  }
 
   function sanitizeEmail(input) {
     // Allow letters, digits, underscores, dots, and @
@@ -207,7 +221,11 @@ document.addEventListener("DOMContentLoaded", () => {
       .then((resp) => resp.json())
       .then((data) => {
         if (data.access_token) {
+          // Store the user’s email in a cookie for future sessions
+          const currentEmail = emailInput.value;
+          document.cookie = `saved_email=${currentEmail};path=/;`;
           document.cookie = `access_token=${data.access_token};path=/;`;
+
           speak("Login successful. Redirecting.");
           window.location.href = "/secret";
         } else if (data.error) {

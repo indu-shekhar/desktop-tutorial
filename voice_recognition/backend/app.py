@@ -189,7 +189,12 @@ def login():
 
     audio_file = request.files["audio-file"]
     face_image = request.files["face-image"]
-    email = request.form.get("email")
+    email = request.form.get("email",None)
+    if not email:
+        email = request.cookies.get("email")
+
+    if not email:
+        return jsonify({"error": "Email missing"}), 400
 
     if not audio_file.filename or not face_image.filename:
         return jsonify({"error": "No file selected"}), 400
