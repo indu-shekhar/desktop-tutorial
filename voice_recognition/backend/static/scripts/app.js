@@ -61,8 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
     emailInput.value = savedEmail;
     statusEl.textContent = `Using saved email: ${savedEmail}`;
     conversationStep = 3; 
-    speak("We have your email on file. Starting voice recording.");
-    startRecording();
+    speakThen("We have your email on file. Starting voice recording.", startRecording);
   } else {
     hotwordRecognition.start();
     speak("Waiting for hello indu.");
@@ -82,8 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (text.includes("hello indu") && conversationStep === 0) {
       conversationStep = 1;
       if (savedEmail) {
-        speak("Starting voice recording.");
-        startRecording();
+        speakThen("Starting voice recording.", startRecording);
       } else {
         speak("Please say your email.");
         statusEl.textContent = "Please say your email.";
@@ -104,8 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (conversationStep === 2 && text.includes("confirm")) {
       conversationStep = 3;
-      speak("Starting voice recording.");
-      startRecording();
+      speakThen("Starting voice recording.", startRecording);
       return;
     } else if (conversationStep === 2 && (text.includes("cancel") || text.includes("no"))) {
       conversationStep = 1;
@@ -123,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   function startRecording() {
-    speakThen("Starting voice recording.", () => {
+    speakThen("Started", () => {
       navigator.mediaDevices.getUserMedia({ audio: true }).then((str) => {
         mediaRecorder = new MediaRecorder(str);
         chunks = [];
@@ -180,7 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const dt = new DataTransfer();
         dt.items.add(file);
         faceInput.files = dt.files;
-        speak("Face captured. Shall I submit? Say confirm or cancel.");
+        speak("Face captured. Shall I submit?");
       });
   }
 
