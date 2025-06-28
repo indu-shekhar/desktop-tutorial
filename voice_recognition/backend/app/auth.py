@@ -1,12 +1,15 @@
 from flask import Blueprint, render_template, request, jsonify
 from .models import User, db
-from .utils import process_audio_file, process_face_image, verify_face
 import io
 import os
 import tempfile
 import numpy as np
 import face_recognition
+from .utils import process_face_image, verify_face
+from .voice_auth import save_and_convert_audio, verify_voice
 from flask_jwt_extended import create_access_token
+import tempfile
+import os
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -30,7 +33,11 @@ def register():
         return jsonify({"error": "Email already registered"}), 400
 
     try:
-        wav_data = process_audio_file(audio_file)
+        # Save and convert audio to 16kHz mono wav
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_audio:
+            save_and_convert_audio(audio_file, tmp_audio.name)
+            tmp_audio.seek(0)
+            wav_data = tmp_audio.read()
         face_encoding = process_face_image(face_image)
         if face_encoding is None:
             return jsonify({"error": "No face detected"}), 400
@@ -64,19 +71,18 @@ def login():
     if not user:
         return jsonify({"error": "User not found"}), 404
     try:
-        # Load enrolled voice from DB
-        enrolled_audio = io.BytesIO(user.audio_file)
-        enrolled_audio.seek(0)
+        # Save enrolled voice to temp file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as enrolled_tmp:
-            enrolled_tmp.write(enrolled_audio.read())
-            temp_audio_path = enrolled_tmp.name
-        # Process new audio file
+            enrolled_tmp.write(user.audio_file)
+            enrolled_audio_path = enrolled_tmp.name
+        # Save and convert new audio file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as input_tmp:
-            from pydub import AudioSegment
-            sound = AudioSegment.from_file(audio_file)
-            sound.export(input_tmp.name, format="wav")
+            save_and_convert_audio(audio_file, input_tmp.name)
             input_audio_path = input_tmp.name
-        # Voice verification (to be implemented in intent.py for shared use)
+        # Voice verification using pyannote
+        voice_match, distance = verify_voice(enrolled_audio_path, input_audio_path)
+        if not voice_match:
+            return jsonify({"error": f"Voice authentication failed (distance={distance:.4f})"}), 401
         # Process face image
         with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as face_tmp:
             face_image.save(face_tmp.name)
@@ -89,6 +95,6 @@ def login():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
-        for path_var in ["temp_audio_path", "input_audio_path", "face_image_path"]:
+        for path_var in ["enrolled_audio_path", "input_audio_path", "face_image_path"]:
             if path_var in locals() and os.path.exists(locals()[path_var]):
                 os.remove(locals()[path_var])
