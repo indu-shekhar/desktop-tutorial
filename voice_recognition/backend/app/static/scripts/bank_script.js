@@ -1,158 +1,101 @@
 document.addEventListener("DOMContentLoaded", () => {
   const output = document.getElementById("output");
 
-  let isActivated = false;
-  let recognitionActive = false;
-  let mediaRecorder;
-  let chunks = [];
-
-  // Create a single SpeechRecognition instance
-  const recognition = new (window.SpeechRecognition ||
-    window.webkitSpeechRecognition)();
-  recognition.continuous = true;
-  recognition.interimResults = false;
-  // recognition.lang = "en-US";
-  recognition.onstart = () => {
-    recognitionActive = true;
-    console.log("Speech recognition started.");
+  const BankAppState = {
+    AWAITING_ACTIVATION: "AWAITING_ACTIVATION",
+    LISTENING_FOR_COMMAND: "LISTENING_FOR_COMMAND",
+    PROCESSING: "PROCESSING",
+    PRESENTING: "PRESENTING",
   };
 
-  recognition.onend = () => {
-    recognitionActive = false;
-    console.log("Speech recognition ended.");
-  };
+  class SpeechService {
+    constructor(onResult) {
+      this.recognitionActive = false;
+      this.onResult = onResult;
 
-  recognition.onerror = (event) => {
-    console.error("Speech recognition error:", event.error);
-    recognitionActive = false;
-  };
-
-  // Updated speak function
-  function speak(text, callback) {
-    if (recognitionActive) {
-      recognition.stop();
-    }
-    const utterance = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(utterance);
-    utterance.onend = () => {
-      if (callback) callback();
-      if (!recognitionActive) {
-        recognition.start();
-      }
-    };
-  }
-
-  function speak_voice_record(text, callback) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(utterance);
-    utterance.onend = () => {
-      setTimeout(() => {
-        if (callback) callback();
-      }, 200);
-    };
-  }
-
-  function formatTransactionRow(transaction) {
-    const date = new Date(transaction.timestamp);
-    const formattedDate = date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    const typeColor =
-      transaction.transaction_type.toLowerCase() === "credit"
-        ? "text-green-400"
-        : "text-red-400";
-
-    return `
-        <tr class="transition-colors hover:bg-blue-900/20">
-            <td class="px-6 py-4 whitespace-nowrap text-sm">${formattedDate}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm ${typeColor} font-medium">
-                ${transaction.transaction_type}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                $${transaction.amount.toFixed(2)}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-900/50 text-blue-400">
-                    Completed
-                </span>
-            </td>
-        </tr>
-    `;
-  }
-
-  // Greet the user on load
-  const welcomeMessage =
-    "Welcome to Voice Activated Banking. Say hello bank to begin.";
-  speak(welcomeMessage);
-  output.textContent = welcomeMessage;
-
-  // Handle recognized speech
-  recognition.onresult = (event) => {
-    const command = event.results[event.results.length - 1][0].transcript
-      .trim()
-      .toLowerCase();
-    console.log("Heard:", command);
-    output.textContent = `You said: ${command}`;
-
-    if (!isActivated) {
-      // Listen for "hi bank" to activate
-      if (command.includes("hello, bank")) {
-        isActivated = true;
-        speak("Voice command mode activated. Please state your command now.");
-      }
-    } else {
-      // Already activated; process command
-      recognition.stop();
-      recognitionActive = false;
-      speak_voice_record("Recording voice sample. Please speak clearly.");
-      startRecording(command);
-    }
-  };
-
-  // Start recording voice sample
-  function startRecording(command) {
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      mediaRecorder = new MediaRecorder(stream);
-      chunks = [];
-      mediaRecorder.ondataavailable = (event) => chunks.push(event.data);
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "audio/wav" });
-        const file = new File([blob], "voice_sample.wav", { type: blob.type });
-        sendVoiceCommand(command, file);
+      this.recognition = new (window.SpeechRecognition ||
+        window.webkitSpeechRecognition)();
+      this.recognition.continuous = true;
+      this.recognition.interimResults = false;
+      // recognition.lang = "en-US";
+      this.recognition.onstart = () => {
+        this.recognitionActive = true;
+        console.log("Speech recognition started.");
       };
 
-      setTimeout(() => {
-        mediaRecorder.start();
-        console.log("Recording started.");
-      }, 1000); // Adjust delay as needed (e.g., 500ms)
-      // mediaRecorder.start();
-      // Automatically stop after 3 minutes
-      setTimeout(() => {
-        if (mediaRecorder.state === "recording") {
-          mediaRecorder.stop();
+      this.recognition.onend = () => {
+        this.recognitionActive = false;
+        console.log("Speech recognition ended.");
+      };
+
+      this.recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        this.recognitionActive = false;
+      };
+
+      this.recognition.onresult = (event) => {
+        this.onResult(event);
+      };
+    }
+
+    start() {
+      this.recognition.start();
+    }
+
+    stop() {
+      this.recognition.stop();
+    }
+
+    speak(text, callback) {
+      if (this.recognitionActive) {
+        this.stop();
+      }
+      const utterance = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(utterance);
+      utterance.onend = () => {
+        if (callback) callback();
+        if (!this.recognitionActive) {
+          this.start();
         }
-      }, 10000); // 3 minutes in milliseconds
-    });
+      };
+    }
   }
 
-  // Existing functionality: identical data submission to backend
-  async function sendVoiceCommand(command, voiceSample) {
-    const tokenCookie = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("access_token="));
-    let token = "";
-    if (tokenCookie) token = tokenCookie.split("=")[1];
+  class MediaRecorderService {
+    constructor(onStop) {
+      this.onStop = onStop;
+      this.mediaRecorder = null;
+      this.chunks = [];
+    }
 
-    const formData = new FormData();
-    formData.append("command", command);
-    formData.append("voice_sample", voiceSample);
+    startRecording(stream) {
+      this.mediaRecorder = new MediaRecorder(stream);
+      this.chunks = [];
+      this.mediaRecorder.ondataavailable = (event) => this.chunks.push(event.data);
+      this.mediaRecorder.onstop = () => {
+        const blob = new Blob(this.chunks, { type: "audio/wav" });
+        this.onStop(blob);
+      };
 
-    try {
+      this.mediaRecorder.start();
+      console.log("Recording started.");
+    }
+
+    stopRecording() {
+      if (this.mediaRecorder && this.mediaRecorder.state === "recording") {
+        this.mediaRecorder.stop();
+      }
+    }
+  }
+
+  class ApiService {
+    static async sendVoiceCommand(formData) {
+      const tokenCookie = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("access_token="));
+      let token = "";
+      if (tokenCookie) token = tokenCookie.split("=")[1];
+
       const response = await fetch("/process_command", {
         method: "POST",
         headers: {
@@ -160,60 +103,191 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         body: formData,
       });
-      const data = await response.json();
-
-      if (data.error) {
-        output.textContent = `Error: ${data.error}`;
-        speak_voice_record(`Error: ${data.error}`, resetActivation);
-      } else if (data.balance !== undefined) {
-        const balanceMsg = `Your balance is $${data.balance.toFixed(2)}`;
-        output.textContent = balanceMsg;
-        speak_voice_record(balanceMsg, resetActivation);
-      } else if (data.transactions) {
-        // let transactionHistory = "Your last five transactions are:\n";
-        // data.transactions.forEach((transaction, index) => {
-        //     transactionHistory +=
-        //       `${index + 1}. ${transaction.transaction_type} of $${transaction.amount.toFixed(2)} on ` +
-        //       `${new Date(transaction.timestamp).toLocaleString()}\n`;
-        // });
-        // output.textContent = transactionHistory;
-        // speak_voice_record(transactionHistory, resetActivation);
-        const tableElement = document.getElementById("transactionTable");
-        const tableBody = document.getElementById("transactionBody");
-
-        // Clear previous entries
-        tableBody.innerHTML = "";
-
-        // Add new transactions
-        data.transactions.forEach((transaction) => {
-          tableBody.innerHTML += formatTransactionRow(transaction);
-        });
-
-        // Show table with animation
-        tableElement.classList.remove("hidden");
-        tableElement.classList.add("animate-fade-in");
-
-        // Update output and speak
-        output.textContent = "Here are your recent transactions:";
-        speak_voice_record(
-          "Here are your recent transactions. The details are displayed in a table below.",
-          resetActivation
-        );
-      } else {
-        output.textContent = data.message;
-        speak_voice_record(data.message, resetActivation);
-      }
-    } catch (error) {
-      output.textContent = "Error communicating with the server.";
-      speak_voice_record(
-        "Error communicating with the server.",
-        resetActivation
-      );
+      return response.json();
     }
   }
 
-  function resetActivation() {
-    isActivated = false;
-    speak("Command complete. Say activation phrase to issue another command.");
+  class BankApp {
+    constructor() {
+      this.state = BankAppState.AWAITING_ACTIVATION;
+      this.userCommand = "";
+      this.stream = null;
+
+      this.speechService = new SpeechService(this.handleSpeechResult.bind(this));
+      this.recorderService = new MediaRecorderService(
+        this.handleRecordingStop.bind(this)
+      );
+
+      this.initialize();
+    }
+
+    async initialize() {
+      try {
+        // Get the media stream once and reuse it
+        this.stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true },
+        });
+        const welcomeMessage =
+          "Welcome to Voice Activated Banking. Say hello bank to begin.";
+        this.speechService.speak(welcomeMessage, () => {
+          this.transitionToState(BankAppState.AWAITING_ACTIVATION);
+        });
+      } catch (err) {
+        console.error("Error initializing media devices:", err);
+        output.textContent =
+          "Error: Could not access microphone. Please grant permission and refresh.";
+      }
+    }
+
+    transitionToState(newState) {
+      console.log(`Transitioning from ${this.state} to ${newState}`);
+      this.state = newState;
+
+      switch (this.state) {
+        case BankAppState.AWAITING_ACTIVATION:
+          output.textContent = "Say 'hello bank' to begin.";
+          this.speechService.start();
+          break;
+        case BankAppState.LISTENING_FOR_COMMAND:
+          this.speechService.speak("I'm listening for your command.", () => {
+            this.recorderService.startRecording(this.stream);
+            this.speechService.start();
+          });
+          break;
+        case BankAppState.PROCESSING:
+          this.speechService.stop();
+          this.recorderService.stopRecording();
+          output.textContent = "Processing your command...";
+          break;
+        case BankAppState.PRESENTING:
+          // Listening is intentionally kept off during presentation
+          this.speechService.stop();
+          break;
+      }
+    }
+
+    handleSpeechResult(event) {
+      const results = event.results;
+      const lastResult = results[results.length - 1];
+      const rawText = lastResult[0].transcript;
+      const text = rawText
+        .toLowerCase()
+        .replace(/[.,!?]/g, "")
+        .trim();
+
+      console.log("Heard:", text);
+      output.textContent = `You said: ${text}`;
+
+      if (
+        this.state === BankAppState.AWAITING_ACTIVATION &&
+        text.includes("hello bank")
+      ) {
+        this.transitionToState(BankAppState.LISTENING_FOR_COMMAND);
+      } else if (this.state === BankAppState.LISTENING_FOR_COMMAND) {
+        if (lastResult.isFinal) {
+          this.userCommand = text;
+          this.transitionToState(BankAppState.PROCESSING);
+        }
+      }
+    }
+
+    async handleRecordingStop(blob) {
+      const formData = new FormData();
+      formData.append("command", this.userCommand);
+      formData.append("voice_sample", blob, "command.wav");
+
+      try {
+        const data = await ApiService.sendVoiceCommand(formData);
+        this.handleApiResponse(data);
+      } catch (error) {
+        this.handleApiError(error);
+      }
+    }
+
+    handleApiResponse(data) {
+      this.transitionToState(BankAppState.PRESENTING);
+      let messageToSpeak = "I could not process that request.";
+
+      if (data.error) {
+        messageToSpeak = `Error: ${data.error}`;
+        output.textContent = messageToSpeak;
+      } else if (data.balance !== undefined) {
+        messageToSpeak = `Your balance is $${data.balance.toFixed(2)}`;
+        output.textContent = messageToSpeak;
+      } else if (data.transactions) {
+        messageToSpeak = "Here are your recent transactions.";
+        this.displayTransactions(data.transactions);
+      } else {
+        messageToSpeak = data.message;
+        output.textContent = messageToSpeak;
+      }
+
+      this.speechService.speak(messageToSpeak, () => {
+        this.resetActivation();
+      });
+    }
+
+    handleApiError(error) {
+      this.transitionToState(BankAppState.PRESENTING);
+      console.error("API Error:", error);
+      const message = "Sorry, there was an error connecting to the server.";
+      output.textContent = message;
+      this.speechService.speak(message, () => {
+        this.resetActivation();
+      });
+    }
+
+    displayTransactions(transactions) {
+      const tableElement = document.getElementById("transactionTable");
+      const tableBody = document.getElementById("transactionBody");
+
+      tableBody.innerHTML = "";
+      transactions.forEach((transaction) => {
+        tableBody.innerHTML += this.formatTransactionRow(transaction);
+      });
+
+      tableElement.classList.remove("hidden");
+      tableElement.classList.add("animate-fade-in");
+      output.textContent = "Here are your recent transactions:";
+    }
+
+    formatTransactionRow(transaction) {
+      const date = new Date(transaction.timestamp);
+      const formattedDate = date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      const typeColor =
+        transaction.transaction_type.toLowerCase() === "credit"
+          ? "text-green-400"
+          : "text-red-400";
+
+      return `
+          <tr class="transition-colors hover:bg-blue-900/20">
+              <td class="px-6 py-4 whitespace-nowrap text-sm">${formattedDate}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm ${typeColor} font-medium">
+                  ${transaction.transaction_type}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                  $${transaction.amount.toFixed(2)}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-900/50 text-blue-400">
+                      Completed
+                  </span>
+              </td>
+          </tr>
+      `;
+    }
+
+    resetActivation() {
+      this.transitionToState(BankAppState.AWAITING_ACTIVATION);
+    }
   }
+
+  new BankApp();
 });
