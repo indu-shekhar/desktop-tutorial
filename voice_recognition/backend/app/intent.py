@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify, render_template
+import logging
 from flask_jwt_extended import decode_token
 from .models import User, TransactionHistory, db
 import io
@@ -105,13 +106,17 @@ def process_command():
     token = request.headers.get("Authorization").split()[1]
     decoded_token = decode_token(token)
     email = decoded_token.get("sub")
+    logging.info(f"[PROCESS_COMMAND] Received command request for user: {email}")
     if not email:
+        logging.warning("[PROCESS_COMMAND] Invalid token: email not found.")
         return jsonify({"error": "Invalid token: email not found"}), 401
     if "voice_sample" not in request.files:
+        logging.warning(f"[PROCESS_COMMAND] Voice sample missing for user: {email}")
         return jsonify({"error": "Voice sample missing"}), 400
     voice_sample = request.files["voice_sample"]
     user = User.query.filter_by(email=email).first()
     if not user:
+        logging.warning(f"[PROCESS_COMMAND] User not found: {email}")
         return jsonify({"error": "User not found"}), 404
     try:
         # Save enrolled voice to temp file
@@ -124,22 +129,30 @@ def process_command():
             input_audio_path = input_tmp.name
         # Voice verification using pyannote
         voice_match, distance = verify_voice(enrolled_audio_path, input_audio_path)
+        logging.info(f"[PROCESS_COMMAND] Voice verification for {email}: distance={distance:.4f}, match={voice_match}")
         if not voice_match:
+            logging.warning(f"[PROCESS_COMMAND] Voice authentication failed for {email} (distance={distance:.4f})")
             return jsonify({"error": f"Voice authentication failed (distance={distance:.4f})"}), 401
         command = request.form.get("command")
+        logging.info(f"[PROCESS_COMMAND] Command received: '{command}' for user: {email}")
         intent = predict_intent(command)
+        logging.info(f"[PROCESS_COMMAND] Predicted intent: {intent} for user: {email}")
         if intent == "CheckBalance":
+            logging.info(f"[PROCESS_COMMAND] Returning balance for {email}: {user.balance}")
             return jsonify({"balance": user.balance})
         elif intent == "TransferMoney":
             name_and_amount = extract_name_and_amount(command)
             if not name_and_amount:
+                logging.warning(f"[PROCESS_COMMAND] Could not parse recipient or amount for command: '{command}'")
                 return jsonify({"error": "Could not parse recipient or amount"}), 400
             name = name_and_amount.get("name")
             amount = float(name_and_amount.get("amount"))
             to_account = User.query.filter_by(user_id=name.lower()).first()
             if not to_account:
+                logging.warning(f"[PROCESS_COMMAND] Recipient account not found: {name}")
                 return jsonify({"error": "Recipient account not found"}), 404
             if user.balance < amount:
+                logging.warning(f"[PROCESS_COMMAND] Insufficient balance for {email}. Tried to send {amount}.")
                 return jsonify({"error": "Insufficient balance"}), 400
             user.balance -= amount
             to_account.balance += amount
@@ -160,6 +173,7 @@ def process_command():
                 )
             )
             db.session.commit()
+            logging.info(f"[PROCESS_COMMAND] Transferred ${amount} from {email} to {name}.")
             return jsonify({"message": f"Transferred ${amount} to {name}'s account."})
         elif intent == "GetLastTransactions":
             transactions = (
@@ -169,6 +183,7 @@ def process_command():
                 .all()
             )
             if not transactions:
+                logging.warning(f"[PROCESS_COMMAND] No transaction history found for {email}")
                 return jsonify({"error": "No transaction history found"}), 404
             history = []
             for t in transactions:
@@ -180,10 +195,13 @@ def process_command():
                         "timestamp": t.timestamp,
                     }
                 )
+            logging.info(f"[PROCESS_COMMAND] Returning last {len(history)} transactions for {email}")
             return jsonify({"transactions": history})
         else:
+            logging.info(f"[PROCESS_COMMAND] Unrecognized command for {email}: '{command}'")
             return jsonify({"message": "I'm sorry, I didn't understand that."})
     except Exception as e:
+        logging.error(f"[PROCESS_COMMAND] Exception: {str(e)}")
         return jsonify({"error": str(e)}), 500
     finally:
         for path_var in ["enrolled_audio_path", "input_audio_path"]:
