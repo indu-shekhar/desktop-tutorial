@@ -1,69 +1,82 @@
+<p align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&color=0074D9&center=true&vCenter=true&width=435&lines=Thank+you+for+exploring+VBank!+%F0%9F%92%B0;Voice-activated+banking+for+everyone." alt="Typing SVG" />
+</p>
+
 <!--
   Voice-Activated Banking Platform Documentation
-  Enhanced with HTML/CSS, color, and visuals for clarity and beauty
+  Enhanced for GitHub Markdown: uses GitHub-supported HTML, emoji, SVG, and color for clarity and beauty
 -->
 
-<style>
-  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f7fafd; color: #222; }
-  h1, h2, h3 { color: #0074d9; }
-  h1 { font-size: 2.5em; border-bottom: 2px solid #00bfff; padding-bottom: 0.2em; }
-  h2 { font-size: 2em; margin-top: 2em; border-left: 5px solid #00bfff; padding-left: 0.5em; }
-  h3 { font-size: 1.3em; margin-top: 1.5em; }
-  .highlight { background: #e6f7ff; border-left: 4px solid #00bfff; padding: 0.5em; margin: 1em 0; }
-  .toc a { color: #0074d9; text-decoration: none; font-weight: bold; }
-  .toc a:hover { text-decoration: underline; }
-  table { border-collapse: collapse; width: 100%; margin: 1em 0; background: #fff; box-shadow: 0 2px 8px #e0e7ef; }
-  th, td { border: 1px solid #b3d8f7; padding: 0.7em 1em; text-align: left; }
-  th { background: #e6f7ff; color: #0074d9; }
-  tr:nth-child(even) { background: #f4faff; }
-  .api-table { font-size: 1em; }
-  .diagram { display: block; margin: 2em auto; max-width: 600px; border-radius: 12px; box-shadow: 0 2px 12px #b3d8f7; }
-  .glossary { background: #f0f8ff; border-left: 4px solid #00bfff; padding: 1em; margin: 1em 0; }
-  .roadmap { background: #fffbe6; border-left: 4px solid #ffb300; padding: 1em; margin: 1em 0; }
-  .jslib { color: #ff851b; font-weight: bold; }
-  .section-img { max-width: 100%; border-radius: 10px; margin: 1em 0; box-shadow: 0 2px 8px #e0e7ef; }
-</style>
-
 <!-- Cover Page -->
-<div style="text-align:center; margin-top:2em;">
-  <img src="https://cdn.pixabay.com/photo/2017/01/10/19/05/bank-1979320_1280.png" alt="Banking Illustration" class="section-img" style="max-width:300px;"/>
-  <h1>Voice-Activated Banking Platform</h1>
-  <div style="font-size:1.2em; color:#555;">Version 1.0.0 &nbsp;|&nbsp; Author: VBank Engineering Team &nbsp;|&nbsp; Date: July 7, 2025</div>
-</div>
+
+<p align="center">
+  <img src="https://cdn.pixabay.com/photo/2017/01/10/19/05/bank-1979320_1280.png" alt="Banking Illustration" width="220"/>
+</p>
+
+<h1 align="center">
+  <span style="color:#0074d9;">💬 Voice-Activated Banking Platform</span>
+</h1>
+
+<p align="center">
+  <b>Version 1.0.0</b> &nbsp;|&nbsp; <b>Author:</b> VBank Engineering Team &nbsp;|&nbsp; <b>Date:</b> July 7, 2025
+</p>
 
 ---
 
-<div class="toc" style="margin:2em 0;">
-  <h2>Table of Contents</h2>
-  <ol>
-    <li><a href="#executive-summary">Executive Summary</a></li>
-    <li><a href="#system-overview">System Overview</a></li>
-    <li><a href="#frontend-architecture-and-design-detailed">Frontend Architecture</a></li>
-    <li><a href="#backend-architecture-detailed">Backend Architecture</a></li>
-    <li><a href="#api-specification">API Specification</a></li>
-    <li><a href="#database-design">Database Design</a></li>
-    <li><a href="#voice--biometric-modules">Voice & Biometric Modules</a></li>
-    <li><a href="#security--compliance">Security & Compliance</a></li>
-    <li><a href="#deployment--devops-pipeline">Deployment & DevOps Pipeline</a></li>
-    <li><a href="#appendices">Appendices</a></li>
-  </ol>
-</div>
+
+<details open>
+<summary><h2>📚 Table of Contents</h2></summary>
+
+<ol>
+  <li><a href="#executive-summary">Executive Summary</a></li>
+  <li><a href="#system-overview">System Overview</a></li>
+  <li><a href="#frontend-architecture-and-design-detailed">Frontend Architecture</a></li>
+  <li><a href="#backend-architecture-detailed">Backend Architecture</a></li>
+  <li><a href="#api-specification">API Specification</a></li>
+  <li><a href="#database-design">Database Design</a></li>
+  <li><a href="#voice--biometric-modules">Voice & Biometric Modules</a></li>
+  <li><a href="#security--compliance">Security & Compliance</a></li>
+  <li><a href="#deployment--devops-pipeline">Deployment & DevOps Pipeline</a></li>
+  <li><a href="#appendices">Appendices</a></li>
+</ol>
+</details>
 
 ---
 
 ## <span id="executive-summary">Executive Summary</span>
-<div class="highlight">
-  <b>Voice-Activated Banking Platform</b> is a secure, user-centric application enabling customers to perform banking operations using natural voice commands. Designed for accessibility and robust security, it integrates advanced voice recognition, liveness detection, and biometric authentication to ensure only authorized users can execute sensitive transactions. The platform targets retail banking customers, financial institutions, and accessibility-focused organizations seeking seamless, hands-free banking experiences.
-</div>
+
+<blockquote>
+  <b>Voice-Activated Banking Platform</b> is a secure, user-centric application enabling customers to perform banking operations using natural voice commands. Designed for accessibility and robust security, it integrates advanced voice recognition, liveness detection, and biometric authentication to ensure only authorized users can execute sensitive transactions.<br><br>
+  <b>Target:</b> Retail banking customers, financial institutions, and accessibility-focused organizations seeking seamless, hands-free banking experiences.
+</blockquote>
 
 ---
 
 ## <span id="system-overview">System Overview</span>
 
-<img src="https://cdn.pixabay.com/photo/2017/06/10/07/18/architecture-2389217_1280.jpg" alt="System Architecture" class="diagram"/>
+
+<p align="center">
+  <img src="https://cdn.pixabay.com/photo/2017/06/10/07/18/architecture-2389217_1280.jpg" alt="System Architecture" width="400"/>
+</p>
 
 ### Architecture Diagram
-<pre style="background:#f4faff; border-left:4px solid #00bfff; padding:1em;">
+<details>
+<summary>Click to view architecture diagram</summary>
+<br>
+<p align="center">
+<img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/microphone.svg" width="32"/>
+<b>User Device</b>
+<span style="color:#888;">(Mic, Browser)</span>
+<br>⬇️⬆️<br>
+<img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/browser.svg" width="32"/>
+<b>Frontend (SPA)</b>
+<span style="color:#888;">(JS, HTML, CSS)</span>
+<br>⬇️⬆️<br>
+<img src="https://raw.githubusercontent.com/edent/SuperTinyIcons/master/images/svg/server.svg" width="32"/>
+<b>Backend (API)</b>
+<span style="color:#888;">(App Server)</span>
+</p>
+```
 +-------------------+      +-------------------+      +-------------------+
 |   User Device     |<---->|   Frontend (SPA)  |<---->|   Backend (API)   |
 | (Mic, Browser)    |      |  (JS, HTML, CSS)  |      |  (App Server)     |
@@ -75,14 +88,15 @@
          |                        |<---DB/Storage----------->|
          |                        |                          |
          |                        |<---Biometric/Voice------>|
-</pre>
+```
+</details>
 
 ### Technology Stack
 <ul>
-  <li><span class="jslib">Frontend:</span> SPA, event-driven, browser APIs for speech/audio, stateful UI, <b>Tailwind CSS</b> for styling.</li>
-  <li><span class="jslib">Backend:</span> RESTful API, authentication/session, business logic, biometric/voice integration.</li>
-  <li><span class="jslib">Database:</span> Relational, stores user, transaction, and session data.</li>
-  <li><span class="jslib">Voice/Biometric:</span> Speech-to-text, text-to-speech, voice matching, liveness detection.</li>
+  <li><b><span style="color:#ff851b;">Frontend:</span></b> SPA, event-driven, browser APIs for speech/audio, stateful UI, <b>Tailwind CSS</b> for styling.</li>
+  <li><b><span style="color:#0074d9;">Backend:</span></b> RESTful API, authentication/session, business logic, biometric/voice integration.</li>
+  <li><b><span style="color:#2ecc40;">Database:</span></b> Relational, stores user, transaction, and session data.</li>
+  <li><b><span style="color:#b10dc9;">Voice/Biometric:</span></b> Speech-to-text, text-to-speech, voice matching, liveness detection.</li>
 </ul>
 
 ---
@@ -227,23 +241,24 @@ The backend is a modular, Flask-based REST API server responsible for all busine
 ## API Specification
 
 <h2 style="margin-top:2em;">API Specification</h2>
-<table class="api-table">
+
+<table>
   <thead>
     <tr>
-      <th>Endpoint</th>
-      <th>Method</th>
-      <th>Auth</th>
-      <th>Parameters</th>
-      <th>Request Format</th>
-      <th>Response Format</th>
-      <th>Error Handling</th>
+      <th style="background:#e6f7ff;color:#0074d9;">Endpoint</th>
+      <th style="background:#e6f7ff;color:#0074d9;">Method</th>
+      <th style="background:#e6f7ff;color:#0074d9;">Auth</th>
+      <th style="background:#e6f7ff;color:#0074d9;">Parameters</th>
+      <th style="background:#e6f7ff;color:#0074d9;">Request Format</th>
+      <th style="background:#e6f7ff;color:#0074d9;">Response Format</th>
+      <th style="background:#e6f7ff;color:#0074d9;">Error Handling</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><code>/register</code></td>
       <td>POST</td>
-      <td>No</td>
+      <td><span style="color:#e67e22;">No</span></td>
       <td>email, user_id, audio-file, face-image</td>
       <td>multipart/form-data</td>
       <td>JSON: message/error</td>
@@ -252,7 +267,7 @@ The backend is a modular, Flask-based REST API server responsible for all busine
     <tr>
       <td><code>/login</code></td>
       <td>POST</td>
-      <td>No</td>
+      <td><span style="color:#e67e22;">No</span></td>
       <td>email, audio-file, face-image</td>
       <td>multipart/form-data</td>
       <td>JSON: access_token/error</td>
@@ -261,7 +276,7 @@ The backend is a modular, Flask-based REST API server responsible for all busine
     <tr>
       <td><code>/process_command</code></td>
       <td>POST</td>
-      <td>Yes</td>
+      <td><span style="color:#27ae60;">Yes</span></td>
       <td>command, voice_sample</td>
       <td>multipart/form-data</td>
       <td>JSON: result, error</td>
@@ -270,7 +285,7 @@ The backend is a modular, Flask-based REST API server responsible for all busine
     <tr>
       <td><code>/generate_otp</code></td>
       <td>GET</td>
-      <td>Yes</td>
+      <td><span style="color:#27ae60;">Yes</span></td>
       <td>-</td>
       <td>-</td>
       <td>JSON: otp_numeric, text</td>
@@ -279,7 +294,7 @@ The backend is a modular, Flask-based REST API server responsible for all busine
     <tr>
       <td><code>/verify_otp_audio</code></td>
       <td>POST</td>
-      <td>Yes</td>
+      <td><span style="color:#27ae60;">Yes</span></td>
       <td>otp_audio</td>
       <td>multipart/form-data</td>
       <td>JSON: success, error</td>
@@ -288,7 +303,7 @@ The backend is a modular, Flask-based REST API server responsible for all busine
     <tr>
       <td><code>/secret</code></td>
       <td>GET</td>
-      <td>Yes</td>
+      <td><span style="color:#27ae60;">Yes</span></td>
       <td>access_token (cookie)</td>
       <td>-</td>
       <td>HTML/JSON</td>
@@ -319,6 +334,14 @@ voice_sample=<audio file>
 ## Database Design
 
 ### ER Diagram
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/mauriciogeneroso/er-diagram-svg/master/er-diagram.svg" width="350" alt="ER Diagram"/>
+</p>
+
+<details>
+<summary>Click to view text ER diagram</summary>
+
 ```
 +---------+      +---------------------+
 |  User   |<---->| TransactionHistory  |
@@ -331,12 +354,13 @@ voice_sample=<audio file>
 +---------+      | timestamp           |
                  +---------------------+
 ```
+</details>
 
 ### Table Definitions
-| Table                | Columns                                         | Indexes                |
+| <span style="color:#0074d9;">Table</span>                | <span style="color:#b10dc9;">Columns</span>                                         | <span style="color:#2ecc40;">Indexes</span>                |
 |----------------------|-------------------------------------------------|------------------------|
-| User                 | user_id (PK), email, audio_file, balance, ...   | user_id, email         |
-| TransactionHistory   | transaction_id (PK), acc_email, sent_to_email, transaction_type, amount, timestamp | acc_email, sent_to_email |
+| <b>User</b>                 | user_id (PK), email, audio_file, balance, ...   | user_id, email         |
+| <b>TransactionHistory</b>   | transaction_id (PK), acc_email, sent_to_email, transaction_type, amount, timestamp | acc_email, sent_to_email |
 
 ### Sample Queries
 ```sql
@@ -360,14 +384,21 @@ SELECT * FROM TransactionHistory WHERE acc_email = 'user@example.com' ORDER BY t
 - Extracts entities (amount, recipient) from recognized text.
 
 ### Authentication Flow
+
+<details>
+<summary>Click to view authentication flow diagram</summary>
+
+```mermaid
+flowchart TD
+    A[User Command] --> B[Voice Verification]
+    B -->|Liveness required| C[Generate OTP]
+    C --> D[Speak OTP]
+    D --> E[Record OTP]
+    E --> F[Voice & Speech Match]
+    F -->|Success| G[Execute command]
+    F -->|Fail| H[Error & Retry]
 ```
-User Command → Voice Verification →
-  If liveness required:
-    Generate OTP → Speak OTP → Record OTP →
-    Voice & Speech Match →
-      If success: Execute command
-      Else: Error & Retry
-```
+</details>
 
 ---
 
@@ -402,13 +433,17 @@ User Command → Voice Verification →
 - [NIST Digital Identity Guidelines](https://pages.nist.gov/800-63-3/)
 
 ### Future Roadmap
-<div class="roadmap">
-- Add support for additional biometric factors (face, fingerprint)
-- Expand command set (bill pay, account linking)
-- Integrate with third-party financial APIs
-- Enhance accessibility features (multi-language, screen reader support)
-- Advanced fraud detection and anomaly monitoring
-</div>
+
+<blockquote>
+<b>🚀 Roadmap</b>
+<ul>
+  <li>Add support for additional biometric factors (face, fingerprint)</li>
+  <li>Expand command set (bill pay, account linking)</li>
+  <li>Integrate with third-party financial APIs</li>
+  <li>Enhance accessibility features (multi-language, screen reader support)</li>
+  <li>Advanced fraud detection and anomaly monitoring</li>
+</ul>
+</blockquote>
 
 ---
 
@@ -524,19 +559,15 @@ App Root (HTML)
 ### Example UI Flow Diagram
 
 ```
-[AWAITING_ACTIVATION]
-    ↓ (trigger phrase)
-[LISTENING_FOR_COMMAND]
-    ↓ (command spoken)
-[PROCESSING]
-    ↓ (liveness required)
-[OTP PROMPT]
-    ↓ (OTP spoken)
-[PROCESSING]
-    ↓ (result)
-[PRESENTING]
-    ↓
-[AWAITING_ACTIVATION]
+
+```mermaid
+flowchart TD
+    A[AWAITING_ACTIVATION] -->|trigger phrase| B[LISTENING_FOR_COMMAND]
+    B -->|command spoken| C[PROCESSING]
+    C -->|liveness required| D[OTP PROMPT]
+    D -->|OTP spoken| E[PROCESSING]
+    E -->|result| F[PRESENTING]
+    F --> G[AWAITING_ACTIVATION]
 ```
 
 ### Example Code Snippet: State Transition (BankApp)
