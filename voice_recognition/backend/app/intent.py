@@ -1,5 +1,6 @@
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, jsonify, render_template, session
 import logging
+import time
 from flask_jwt_extended import decode_token
 from .models import User, TransactionHistory, db
 import io
@@ -7,13 +8,98 @@ import os
 import tempfile
 import numpy as np
 from .voice_auth import save_and_convert_audio, verify_voice
+from .utils import generate_otp_phrase, fuzzy_otp_match
+import speech_recognition as sr
+def recognize_otp_from_audio(audio_path):
+    recognizer = sr.Recognizer()
+    with sr.AudioFile(audio_path) as source:
+        audio = recognizer.record(source)
+    try:
+        text = recognizer.recognize_google(audio)
+        return text
+    except Exception as e:
+        logging.error(f"[BACKEND] Speech recognition error: {e}")
+        return ""
+
+# Only define the blueprint ONCE and register all routes on it
+intent_bp = Blueprint('intent', __name__)
+
+
+@intent_bp.route("/generate_otp", methods=["GET"])
+def generate_otp():
+    # Ensure session is permanent for OTP
+    session.permanent = True
+    numeric, text = generate_otp_phrase()
+    session['otp_numeric'] = numeric
+    session['otp_text'] = text
+    session['otp_expiry'] = time.time() + 60
+    return jsonify({"otp_numeric": numeric, "otp_text": text})
+
+
+@intent_bp.route("/verify_otp_audio", methods=["POST"])
+def verify_otp_audio():
+    logging.info('[BACKEND] /verify_otp_audio called')
+    try:
+        # Defensive: ensure session is permanent
+        session.permanent = True
+        if 'otp_numeric' not in session or 'otp_text' not in session or 'otp_expiry' not in session:
+            logging.warning('[BACKEND] OTP not generated or expired')
+            return jsonify({"error": "OTP not generated or expired."}), 400
+        if time.time() > session['otp_expiry']:
+            logging.warning('[BACKEND] OTP expired')
+            return jsonify({"error": "OTP expired."}), 401
+        user = None
+        token = request.headers.get("Authorization")
+        if token:
+            try:
+                token = token.split()[1]
+                decoded_token = decode_token(token)
+                email = decoded_token.get("sub")
+                user = User.query.filter_by(email=email).first()
+            except Exception as e:
+                logging.warning(f'[BACKEND] Token decode error: {e}')
+                return jsonify({"error": "Invalid token."}), 401
+        if not user:
+            logging.warning('[BACKEND] User not found for OTP')
+            return jsonify({"error": "User not found."}), 404
+        if "otp_audio" not in request.files:
+            logging.warning('[BACKEND] OTP audio missing in request')
+            return jsonify({"error": "OTP audio missing."}), 400
+        otp_audio = request.files["otp_audio"]
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as input_tmp:
+            save_and_convert_audio(otp_audio, input_tmp.name)
+            input_audio_path = input_tmp.name
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as enrolled_tmp:
+            enrolled_tmp.write(user.audio_file)
+            enrolled_audio_path = enrolled_tmp.name
+        voice_match, _ = verify_voice(enrolled_audio_path, input_audio_path)
+        logging.info(f'[BACKEND] Voice match for OTP: {voice_match}')
+        if not voice_match:
+            os.remove(input_audio_path)
+            os.remove(enrolled_audio_path)
+            logging.warning('[BACKEND] Voice does not match for OTP')
+            return jsonify({"error": "Voice does not match."}), 401
+        recognized_text = recognize_otp_from_audio(input_audio_path)
+        logging.info(f'[BACKEND] Recognized OTP text: {recognized_text}')
+        os.remove(input_audio_path)
+        os.remove(enrolled_audio_path)
+        if fuzzy_otp_match(session['otp_numeric'], session['otp_text'], recognized_text):
+            session['otp_verified'] = True
+            logging.info('[BACKEND] OTP matched successfully')
+            return jsonify({"success": True})
+        else:
+            logging.warning('[BACKEND] OTP did not match')
+            return jsonify({"error": "OTP did not match."}), 401
+    except Exception as e:
+        logging.error(f"[BACKEND] Exception in /verify_otp_audio: {e}")
+        return jsonify({"error": str(e)}), 500
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 import re
 
-intent_bp = Blueprint('intent', __name__)
+# ...existing code...
 
 
 
@@ -82,9 +168,11 @@ def extract_name_and_amount(text):
     else:
         return None
 
+
 @intent_bp.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
+
 
 @intent_bp.route("/secret", methods=["GET"])
 def secret():
@@ -101,24 +189,29 @@ def secret():
     except Exception as e:
         return jsonify({"error": str(e)}), 401
 
+
 @intent_bp.route("/process_command", methods=["POST"])
 def process_command():
-    token = request.headers.get("Authorization").split()[1]
-    decoded_token = decode_token(token)
-    email = decoded_token.get("sub")
-    logging.info(f"[PROCESS_COMMAND] Received command request for user: {email}")
-    if not email:
-        logging.warning("[PROCESS_COMMAND] Invalid token: email not found.")
-        return jsonify({"error": "Invalid token: email not found"}), 401
-    if "voice_sample" not in request.files:
-        logging.warning(f"[PROCESS_COMMAND] Voice sample missing for user: {email}")
-        return jsonify({"error": "Voice sample missing"}), 400
-    voice_sample = request.files["voice_sample"]
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        logging.warning(f"[PROCESS_COMMAND] User not found: {email}")
-        return jsonify({"error": "User not found"}), 404
     try:
+        token = request.headers.get("Authorization")
+        if not token:
+            logging.warning("[PROCESS_COMMAND] Missing Authorization header.")
+            return jsonify({"error": "Missing Authorization header."}), 401
+        token = token.split()[1]
+        decoded_token = decode_token(token)
+        email = decoded_token.get("sub")
+        logging.info(f"[PROCESS_COMMAND] Received command request for user: {email}")
+        if not email:
+            logging.warning("[PROCESS_COMMAND] Invalid token: email not found.")
+            return jsonify({"error": "Invalid token: email not found"}), 401
+        if "voice_sample" not in request.files:
+            logging.warning(f"[PROCESS_COMMAND] Voice sample missing for user: {email}")
+            return jsonify({"error": "Voice sample missing"}), 400
+        voice_sample = request.files["voice_sample"]
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            logging.warning(f"[PROCESS_COMMAND] User not found: {email}")
+            return jsonify({"error": "User not found"}), 404
         # Save enrolled voice to temp file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as enrolled_tmp:
             enrolled_tmp.write(user.audio_file)
@@ -137,6 +230,15 @@ def process_command():
         logging.info(f"[PROCESS_COMMAND] Command received: '{command}' for user: {email}")
         intent = predict_intent(command)
         logging.info(f"[PROCESS_COMMAND] Predicted intent: {intent} for user: {email}")
+        # Liveliness detection for all commands (except if already verified)
+        session.permanent = True
+        if not session.get('otp_verified'):
+            numeric, text = generate_otp_phrase()
+            session['otp_numeric'] = numeric
+            session['otp_text'] = text
+            session['otp_expiry'] = time.time() + 60
+            return jsonify({"liveness_required": True, "otp_text": text, "otp_numeric": numeric}), 200
+        session.pop('otp_verified', None)
         if intent == "CheckBalance":
             logging.info(f"[PROCESS_COMMAND] Returning balance for {email}: {user.balance}")
             return jsonify({"balance": user.balance})

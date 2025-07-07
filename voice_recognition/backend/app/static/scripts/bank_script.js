@@ -89,6 +89,38 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   class ApiService {
+    static async getOtp() {
+      const response = await fetch("/generate_otp", { method: "GET", credentials: "same-origin" });
+      return response.json();
+    }
+    static async verifyOtpAudio(blob) {
+      const tokenCookie = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("access_token="));
+      let token = "";
+      if (tokenCookie) token = tokenCookie.split("=")[1];
+      const formData = new FormData();
+      formData.append("otp_audio", blob, "otp_audio.wav");
+      try {
+        const response = await fetch("/verify_otp_audio", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+          credentials: "same-origin",
+        });
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          return await response.json();
+        } else {
+          const text = await response.text();
+          return { error: text };
+        }
+      } catch (e) {
+        return { error: e.message };
+      }
+    }
     static async sendVoiceCommand(formData) {
       const tokenCookie = document.cookie
         .split("; ")
@@ -107,8 +139,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  class BankApp {
+
+class BankApp {
     constructor() {
+      this.livenessRequired = false;
+      this.otpText = null;
+      this.otpNumeric = null;
+      this.livenessBlob = null;
       this.state = BankAppState.AWAITING_ACTIVATION;
       this.userCommand = "";
       this.stream = null;
@@ -140,21 +177,45 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     transitionToState(newState) {
-      console.log(`Transitioning from ${this.state} to ${newState}`);
+      // Centralized state transition with logging and cleanup
+      console.log(`[STATE] Transitioning from ${this.state} to ${newState}`);
+      // Clean up previous state if needed
+      switch (this.state) {
+        case BankAppState.LISTENING_FOR_COMMAND:
+        case BankAppState.PROCESSING:
+          // Always stop recognition and recording before leaving these states
+          this.speechService.stop();
+          this.recorderService.stopRecording();
+          break;
+      }
       this.state = newState;
-
       switch (this.state) {
         case BankAppState.AWAITING_ACTIVATION:
           output.textContent = "Say 'hello bank' to begin.";
-          this.speechService.start();
+          this.userCommand = "";
+          this.livenessRequired = false;
+          this.otpText = null;
+          this.otpNumeric = null;
+          this.lastCommandBlob = null;
+          this.livenessBlob = null;
+          try {
+            this.speechService.start();
+          } catch (e) {
+            console.error('[STATE] Error starting speech recognition:', e);
+          }
           break;
         case BankAppState.LISTENING_FOR_COMMAND:
           this.speechService.speak("I'm listening for your command.", () => {
-            this.recorderService.startRecording(this.stream);
-            this.speechService.start();
+            try {
+              this.recorderService.startRecording(this.stream);
+              this.speechService.start();
+            } catch (e) {
+              this.handleApiError(e);
+            }
           });
           break;
         case BankAppState.PROCESSING:
+          // Defensive: stop everything before processing
           this.speechService.stop();
           this.recorderService.stopRecording();
           output.textContent = "Processing your command...";
@@ -167,71 +228,177 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     handleSpeechResult(event) {
-      const results = event.results;
-      const lastResult = results[results.length - 1];
-      const rawText = lastResult[0].transcript;
-      const text = rawText
-        .toLowerCase()
-        .replace(/[.,!?]/g, "")
-        .trim();
+      try {
+        const results = event.results;
+        const lastResult = results[results.length - 1];
+        const rawText = lastResult[0].transcript;
+        const text = rawText
+          .toLowerCase()
+          .replace(/[.,!?]/g, "")
+          .trim();
 
-      console.log("Heard:", text);
-      output.textContent = `You said: ${text}`;
+        console.log("Heard:", text);
+        output.textContent = `You said: ${text}`;
 
-      if (
-        this.state === BankAppState.AWAITING_ACTIVATION &&
-        text.includes("hello bank")
-      ) {
-        this.transitionToState(BankAppState.LISTENING_FOR_COMMAND);
-      } else if (this.state === BankAppState.LISTENING_FOR_COMMAND) {
-        if (lastResult.isFinal) {
-          this.userCommand = text;
+        if (
+          this.state === BankAppState.AWAITING_ACTIVATION &&
+          text.includes("hello bank")
+        ) {
+          this.transitionToState(BankAppState.LISTENING_FOR_COMMAND);
+        } else if (this.state === BankAppState.LISTENING_FOR_COMMAND) {
+          if (lastResult.isFinal) {
+            this.userCommand = text;
+            this.transitionToState(BankAppState.PROCESSING);
+          }
+        }
+
+        // Liveliness/OTP: If waiting for OTP and user finished speaking, stop recorder to send OTP audio
+        if (this.livenessRequired && lastResult.isFinal) {
+          console.log('[BankApp] OTP speech recognized, stopping MediaRecorder...');
+          this.recorderService.stopRecording(); // triggers handleRecordingStop() with OTP
           this.transitionToState(BankAppState.PROCESSING);
         }
+      } catch (e) {
+        this.handleApiError(e);
       }
     }
 
     async handleRecordingStop(blob) {
+      console.log('[BankApp] handleRecordingStop called. livenessRequired:', this.livenessRequired);
+      // If in liveness/OTP mode, send OTP audio to backend and after success, send command
+      if (this.livenessRequired) {
+        console.log('[BankApp] Sending OTP audio to backend for verification...');
+        // This is the OTP/liveness audio
+        try {
+          // Send OTP audio to backend for verification
+          const verifyRes = await ApiService.verifyOtpAudio(blob);
+          console.log('[BankApp] OTP backend response:', verifyRes);
+          if (verifyRes.success) {
+            this.livenessRequired = false;
+            this.otpText = null;
+            this.otpNumeric = null;
+            // Now re-send the original command and voice sample (the one before OTP)
+            if (this.lastCommandBlob && this.userCommand) {
+              console.log('[BankApp] Resending original command after OTP success.');
+              const formData = new FormData();
+              formData.append("command", this.userCommand);
+              formData.append("voice_sample", this.lastCommandBlob, "command.wav");
+              try {
+                const data = await ApiService.sendVoiceCommand(formData);
+                console.log('[BankApp] Command backend response after OTP:', data);
+                this.handleApiResponse(data);
+              } catch (error) {
+                console.error('[BankApp] Error sending command after OTP:', error);
+                this.handleApiError(error);
+              }
+            } else {
+              // fallback: ask user to repeat command
+              console.warn('[BankApp] No lastCommandBlob or userCommand found after OTP. Asking user to repeat.');
+              this.speechService.speak("Liveness check passed. Please repeat your command.", () => {
+                this.transitionToState(BankAppState.LISTENING_FOR_COMMAND);
+              });
+            }
+          } else {
+            console.warn('[BankApp] Liveness check failed:', verifyRes);
+            this.speechService.speak("Liveness check failed. Please try again.", () => {
+              this.resetActivation();
+            });
+          }
+        } catch (error) {
+          console.error('[BankApp] Error during OTP verification:', error);
+          this.handleApiError(error);
+        }
+        return;
+      }
+      // Normal command flow: record and store the command audio for possible reuse after OTP
+      this.lastCommandBlob = blob;
       const formData = new FormData();
       formData.append("command", this.userCommand);
       formData.append("voice_sample", blob, "command.wav");
-
       try {
+        console.log('[BankApp] Sending command to backend...');
         const data = await ApiService.sendVoiceCommand(formData);
-        this.handleApiResponse(data);
+        console.log('[BankApp] Command backend response:', data);
+        if (data.liveness_required) {
+          // Liveliness/OTP required
+          this.livenessRequired = true;
+          this.otpText = data.otp_text;
+          this.otpNumeric = data.otp_numeric;
+          console.log('[BankApp] Liveliness required. Prompting for OTP:', this.otpText);
+          this.speechService.speak(
+            `For security, please repeat the following code: ${this.otpText}`,
+            () => {
+              this.recorderService.startRecording(this.stream);
+            }
+          );
+        } else {
+          this.handleApiResponse(data);
+        }
       } catch (error) {
+        console.error('[BankApp] Error sending command:', error);
         this.handleApiError(error);
       }
     }
 
+    async sendCommandWithLiveness() {
+      // After liveness/OTP is verified, re-send the original command and voice sample
+      if (this.livenessBlob && this.userCommand) {
+        const formData = new FormData();
+        formData.append("command", this.userCommand);
+        formData.append("voice_sample", this.livenessBlob, "command.wav");
+        try {
+          const data = await ApiService.sendVoiceCommand(formData);
+          this.handleApiResponse(data);
+        } catch (error) {
+          this.handleApiError(error);
+        }
+      } else {
+        // fallback: ask user to repeat command
+        this.speechService.speak("Liveness check passed. Please repeat your command.", () => {
+          this.transitionToState(BankAppState.LISTENING_FOR_COMMAND);
+        });
+      }
+    }
+
     handleApiResponse(data) {
+      // Robust: always go to PRESENTING, then reset
       this.transitionToState(BankAppState.PRESENTING);
       let messageToSpeak = "I could not process that request.";
-
-      if (data.error) {
-        messageToSpeak = `Error: ${data.error}`;
+      try {
+        if (data.error) {
+          messageToSpeak = `Error: ${data.error}`;
+          output.textContent = messageToSpeak;
+        } else if (data.balance !== undefined) {
+          messageToSpeak = `Your balance is $${data.balance.toFixed(2)}`;
+          output.textContent = messageToSpeak;
+        } else if (data.transactions) {
+          messageToSpeak = "Here are your recent transactions.";
+          this.displayTransactions(data.transactions);
+        } else if (data.message) {
+          messageToSpeak = data.message;
+          output.textContent = messageToSpeak;
+        }
+      } catch (e) {
+        messageToSpeak = "Sorry, an error occurred while processing the response.";
         output.textContent = messageToSpeak;
-      } else if (data.balance !== undefined) {
-        messageToSpeak = `Your balance is $${data.balance.toFixed(2)}`;
-        output.textContent = messageToSpeak;
-      } else if (data.transactions) {
-        messageToSpeak = "Here are your recent transactions.";
-        this.displayTransactions(data.transactions);
-      } else {
-        messageToSpeak = data.message;
-        output.textContent = messageToSpeak;
+        console.error('[BankApp] Error in handleApiResponse:', e);
       }
-
       this.speechService.speak(messageToSpeak, () => {
         this.resetActivation();
       });
     }
 
     handleApiError(error) {
+      // Robust: always go to PRESENTING, then reset
       this.transitionToState(BankAppState.PRESENTING);
-      console.error("API Error:", error);
-      const message = "Sorry, there was an error connecting to the server.";
+      let message = "Sorry, there was an error connecting to the server.";
+      if (error && error.message) {
+        message = `Error: ${error.message}`;
+      } else if (typeof error === 'string') {
+        message = error;
+      }
       output.textContent = message;
+      console.error("[BankApp] API Error:", error);
       this.speechService.speak(message, () => {
         this.resetActivation();
       });
