@@ -56,7 +56,7 @@
 
 
 <p align="center">
-  <img src="https://cdn.pixabay.com/photo/2017/06/10/07/18/architecture-2389217_1280.jpg" alt="System Architecture" width="400"/>
+  <img src="voice_recognition/backend/templates/architecture%20diageram.png" alt="System Architecture" width="400"/>
 </p>
 
 ### Architecture Diagram
