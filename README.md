@@ -10,7 +10,7 @@
 <!-- Cover Page -->
 
 <p align="center">
-  <img src="[https://cdn.pixabay.com/photo/2017/01/10/19/05/bank-1979320_1280.png](https://cdn-icons-png.flaticon.com/128/2830/2830155.png)" alt="Banking Illustration" width="220"/>
+  <img src="https://cdn-icons-png.flaticon.com/128/2830/2830155.png" alt="Banking Illustration" width="220"/>
 </p>
 
 <h1 align="center">
