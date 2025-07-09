@@ -9,8 +9,8 @@
 
 <!-- Cover Page -->
 
-<p align="center">
-  <img src="https://cdn-icons-png.flaticon.com/128/8566/8566205.png" alt="Banking Illustration" width="220"/>
+<p align="center" style="width:100%;margin:0;padding:0;">
+  <img src="voice_recognition/backend/templates/Vbank image.png" alt="VBank Full Width Banner" style="display:block;width:100%;max-width:100%;height:auto;margin:0 auto;"/>
 </p>
 
 <h1 align="center">
