@@ -18,7 +18,7 @@
 </h1>
 
 <p align="center">
-  <b>Version 1.0.0</b> &nbsp;|&nbsp; <b>Author:</b> Indu Shekhar Jha &nbsp;|&nbsp; <b>Date:</b> July 7, 2025
+  <b>Version 8.1.9</b> &nbsp;|&nbsp; <b>Author:</b> Indu Shekhar Jha &nbsp;|&nbsp; <b>Date:</b> July 7, 2025
 </p>
 
 ---
