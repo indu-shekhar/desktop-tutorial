@@ -65,6 +65,112 @@
 <p align="center">
   <img src="voice_recognition/backend/templates/architecture%20diageram.png" alt="System Architecture" width="400"/>
 </p>
+```mermaid
+mindmap
+  root((Voice-Activated Banking Platform))
+    Executive Summary
+      Secure, User-Centric Application
+      Natural Voice Commands
+      Accessibility & Robust Security
+      Integrates Voice Recognition
+      Liveness Detection
+      Biometric Authentication
+      Target Audience
+        Retail Banking Customers
+        Financial Institutions
+        Accessibility-Focused Organizations
+      Key Features
+        Voice-driven Command Execution
+        Multi-factor Authentication
+        Real-time Speech Recognition & Synthesis
+        Secure Session & Error Management
+        Modular, Extensible Architecture
+    System Overview
+    Frontend Architecture
+      Component Hierarchy
+        App Root
+        Output Display
+        State Controller
+        SpeechService
+        MediaRecorderService
+        ApiService
+        TransactionTable
+      State Management (BankAppState)
+        AWAITING_ACTIVATION
+        LISTENING_FOR_COMMAND
+        PROCESSING
+        PRESENTING
+      Event Handling & UI Flow
+        Activation: 'hello bank'
+        Command Recording & Sending
+        Verification: OTP Prompt & Record
+        Response Presentation & Reset
+      Error Recovery
+        Errors Routed to PRESENTING
+        Graceful UI Inform
+        Resets to AWAITING_ACTIVATION
+    Backend Architecture
+      API Routing: Modular, Blueprint-based
+      Authentication & Session Handling
+        JWT for Stateless Authentication
+        Flask Sessions for OTP/Liveness
+      External Integrations
+        Voice/Biometric Modules
+        Database
+      Detailed Overview (Flask-based REST API)
+        Key Modules
+        API Endpoint Details
+        Security & Compliance
+    API Specification
+      /process_command (POST)
+      /generate_otp (GET)
+      /verify_otp_audio (POST)
+      /secret (GET)
+      Example Request/Response
+    Database Design
+      ER Diagram
+        USER
+        TRANSACTION_HISTORY
+      Table Definitions
+        User Table
+        TransactionHistory Table
+      Sample Queries
+        Get user by email
+        Get last 5 transactions
+    Voice & Biometric Modules
+      Speech Recognition & Synthesis
+      Intent Handling
+        Classifies User Intent
+        Extracts Entities (Amount, Recipient)
+    Security & Compliance
+      Authentication Flow
+        User Speaks Command
+        Audio for Voice Verification
+        Liveness Required (OTP)
+        User Repeats OTP
+        OTP Audio Sent
+        Verification Success
+        Original Command Execution
+        Result Presentation
+      Data Encryption (HTTPS, At Rest)
+      Authentication (JWT)
+      Liveness (Session-based OTP, Expiry)
+      Data Minimization
+      Safe Fallback on Error
+    Deployment & DevOps Pipeline
+      CI/CD Pipeline
+      Configuration (Env Vars, Secrets)
+      Monitoring (Uptime, Error, Security)
+      Rollbacks (Blue/Green, Versioned)
+    Frontend Architecture (Detailed)
+      High-Level Overview
+      State Management & UI Flow
+      Low-Level Design Details
+    Appendices
+      Glossary
+      References
+      Future Roadmap
+```
 
 ### Architecture Diagram
 <details>
