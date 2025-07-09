@@ -65,6 +65,7 @@
 <p align="center">
   <img src="voice_recognition/backend/templates/architecture%20diageram.png" alt="System Architecture" width="400"/>
 </p>
+
 ```mermaid
 mindmap
   root((Voice-Activated Banking Platform))
@@ -171,6 +172,7 @@ mindmap
       References
       Future Roadmap
 ```
+
 
 ### Architecture Diagram
 <details>
