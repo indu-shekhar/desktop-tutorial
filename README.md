@@ -26,13 +26,8 @@
 ## 🖼️ Demo Screenshots
 
 <p align="center">
-  <b>Login Page Demo</b><br>
-  <img src="voice_recognition/backend/templates/login%20page.gif" alt="Login Page Demo" width="400"/>
-</p>
-
-<p align="center">
-  <b>Banking Page Demo</b><br>
-  <img src="voice_recognition/backend/templates/banking%20page.gif" alt="Banking Page Demo" width="400"/>
+  <img src="voice_recognition/backend/templates/login%20page.gif" alt="Login Page Demo" width="400" style="display:inline-block;margin-right:20px;"/>
+  <img src="voice_recognition/backend/templates/banking%20page.gif" alt="Banking Page Demo" width="400" style="display:inline-block;"/>
 </p>
 
 
