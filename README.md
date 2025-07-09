@@ -350,7 +350,7 @@ erDiagram
         string email
         binary audio_file
         float balance
-        ... // other fields
+        %% other fields can be added here as needed
     }
     TRANSACTIONHISTORY {
         int transaction_id PK
@@ -361,10 +361,6 @@ erDiagram
         datetime timestamp
     }
     USER ||--o{ TRANSACTIONHISTORY : has
-    TRANSACTIONHISTORY {
-        acc_email
-        sent_to_email
-    }
 ```
 
 <details>
