@@ -10,7 +10,7 @@
 <!-- Cover Page -->
 
 <p align="center" style="width:50%;margin:0;padding:0;">
-  <img src="voice_recognition/backend/templates/Vbank image.png" alt="VBank Full Width Banner" style="display:block;width:100%;max-width:100%;height:auto;margin:0 auto;"/>
+  <img src="voice_recognition/backend/templates/Vbank image.png" alt="VBank Full Width Banner" style="display:block;width:50%;max-width:50%;height:auto;margin:20% auto;"/>
 </p>
 
 <h1 align="center">
