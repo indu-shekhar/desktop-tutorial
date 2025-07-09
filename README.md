@@ -23,6 +23,18 @@
 
 ---
 
+## 🖼️ Demo Screenshots
+
+<p align="center">
+  <b>Login Page Demo</b><br>
+  <img src="voice_recognition/backend/templates/login%20page.gif" alt="Login Page Demo" width="400"/>
+</p>
+
+<p align="center">
+  <b>Banking Page Demo</b><br>
+  <img src="voice_recognition/backend/templates/banking%20page.gif" alt="Banking Page Demo" width="400"/>
+</p>
+
 
 <details open>
 <summary><h2>📚 Table of Contents</h2></summary>

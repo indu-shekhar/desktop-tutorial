@@ -153,7 +153,8 @@ def predict_intent(text):
     return bank_model.predict(text_vec)[0]
 
 def extract_name_and_amount(text):
-    pattern = r"(?i)(?:send|transfer|give|forward|pay|dispatch|deliver|allocate|wire|remit)?\\s*(?:\\$)?(\\d+)\\s*(?:to|for|towards)?\\s*([a-zA-Z]+)|([a-zA-Z]+)\\s*(?:needs|requires|deserves|expects|asked for|requested|waiting for|could use|should receive|might need)\\s*(?:\\$)?(\\d+)"
+    # Fixed regex: use single backslashes in raw string for regex special chars
+    pattern = r"(?i)(?:send|transfer|give|forward|pay|dispatch|deliver|allocate|wire|remit)?\s*(?:\$)?(\d+)\s*(?:to|for|towards)?\s*([a-zA-Z]+)|([a-zA-Z]+)\s*(?:needs|requires|deserves|expects|asked for|requested|waiting for|could use|should receive|might need)\s*(?:\$)?(\d+)"
     match = re.search(pattern, text)
     if match:
         if match.group(1) and match.group(2):
