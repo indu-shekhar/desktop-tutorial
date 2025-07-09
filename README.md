@@ -340,11 +340,32 @@ voice_sample=<audio file>
 
 ## Database Design
 
+
 ### ER Diagram
 
-<p align="center">
-<img src="https://raw.githubusercontent.com/mauriciogeneroso/er-diagram-svg/master/er-diagram.svg" width="350" alt="ER Diagram"/>
-</p>
+```mermaid
+erDiagram
+    USER {
+        int user_id PK
+        string email
+        binary audio_file
+        float balance
+        ... // other fields
+    }
+    TRANSACTIONHISTORY {
+        int transaction_id PK
+        string acc_email
+        string sent_to_email
+        string transaction_type
+        float amount
+        datetime timestamp
+    }
+    USER ||--o{ TRANSACTIONHISTORY : has
+    TRANSACTIONHISTORY {
+        acc_email
+        sent_to_email
+    }
+```
 
 <details>
 <summary>Click to view text ER diagram</summary>
